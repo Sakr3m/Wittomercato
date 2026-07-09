@@ -595,16 +595,18 @@ function applyScale(){
 
 window.addEventListener('resize', applyScale);
 window.addEventListener('load', applyScale);
-
-// I font (Anton, JetBrains Mono, ecc.) si caricano in modo asincrono e
-// possono cambiare l'altezza reale del testo dopo il primo render.
-// Ricalcoliamo le proporzioni non appena tutti i font sono pronti.
-if(document.fonts && document.fonts.ready){
-  document.fonts.ready.then(applyScale);
-}
-// Rete di sicurezza extra per qualsiasi altro reflow tardivo
-setTimeout(applyScale, 400);
 applyScale();
+
+// Correzione ripetuta: qualunque sia la causa del ritardo (font, layout,
+// cache del browser...) ricalcoliamo le proporzioni ogni 100ms per il
+// primo secondo e mezzo, così la pagina si assesta da sola senza dover
+// scorrere o interagire prima.
+let stabilizeCount = 0;
+const stabilizeInterval = setInterval(() => {
+  applyScale();
+  stabilizeCount++;
+  if(stabilizeCount > 15) clearInterval(stabilizeInterval);
+}, 100);
 
 // Ricalcola l'altezza anche dopo ogni apertura/chiusura di un mese
 // (la transizione max-height cambia l'altezza reale del contenuto)
