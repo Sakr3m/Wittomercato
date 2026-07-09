@@ -3,6 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  // Calcolo la scala SUBITO, prima che il resto della pagina venga disegnato.
+  // Dipende solo dalla larghezza della finestra (sempre disponibile all'istante),
+  // mai dall'altezza del contenuto (che invece dipende da font/immagini e
+  // causava il "flash" iniziale con proporzioni sbagliate).
+  (function(){
+    var DESIGN_WIDTH = 1075;
+    function setScale(){
+      var scale = window.innerWidth / DESIGN_WIDTH;
+      document.documentElement.style.setProperty('--page-scale', scale);
+    }
+    setScale();
+    window.addEventListener('resize', setScale);
+    window.__setPageScale = setScale;
+  })();
+</script>
 <title>Calciomercato Videoludico</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -329,6 +345,7 @@
     width: 1075px;
     margin: 0 auto;
     transform-origin: top center;
+    transform: scale(var(--page-scale, 1));
   }
 </style>
 </head>
@@ -580,16 +597,15 @@ function renderMonth(mese){
 const timeline = document.getElementById('timeline');
 MESI.forEach(m => timeline.appendChild(renderMonth(m)));
 
-/* Scaling uniforme: il design ha una larghezza fissa (DESIGN_WIDTH),
-   viene scalato in base alla larghezza reale dello schermo così la
-   resa visiva (proporzioni, font, spaziature) è identica ovunque. */
+/* La SCALA VISIVA è già impostata subito in <head> (vedi script in alto),
+   qui ci occupiamo solo di calcolare l'altezza reale del contenuto scalato,
+   necessaria perché lo scroll della pagina funzioni correttamente. */
 const DESIGN_WIDTH = 1075;
 const scaleOuter = document.getElementById('scale-outer');
 const scaleInner = document.getElementById('scale-inner');
 
 function applyScale(){
   const scale = window.innerWidth / DESIGN_WIDTH;
-  scaleInner.style.transform = `scale(${scale})`;
   scaleOuter.style.height = (scaleInner.offsetHeight * scale) + 'px';
 }
 
@@ -598,9 +614,9 @@ window.addEventListener('load', applyScale);
 applyScale();
 
 // Correzione ripetuta: qualunque sia la causa del ritardo (font, layout,
-// cache del browser...) ricalcoliamo le proporzioni ogni 100ms per il
-// primo secondo e mezzo, così la pagina si assesta da sola senza dover
-// scorrere o interagire prima.
+// cache del browser...) ricalcoliamo l'altezza ogni 100ms per il primo
+// secondo e mezzo, così lo scroll risulta sempre corretto senza dover
+// interagire prima.
 let stabilizeCount = 0;
 const stabilizeInterval = setInterval(() => {
   applyScale();
