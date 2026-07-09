@@ -602,6 +602,86 @@ applyScale();
 const resizeObserver = new ResizeObserver(() => applyScale());
 resizeObserver.observe(scaleInner);
 
+/* ============================================================
+   NAVIGAZIONE A SCATTI: rotella e frecce direzionali passano
+   da un mese al successivo/precedente invece di scorrere in
+   continuo, come una sequenza di slide verticali.
+   ============================================================ */
+const monthEls = Array.from(document.querySelectorAll('.month'));
+let currentMonthIndex = 0;
+let navLocked = false;
+
+function updateCurrentIndexFromScroll(){
+  let closest = 0;
+  let closestDist = Infinity;
+  monthEls.forEach((el, i) => {
+    const dist = Math.abs(el.getBoundingClientRect().top);
+    if(dist < closestDist){ closestDist = dist; closest = i; }
+  });
+  currentMonthIndex = closest;
+}
+
+function goToMonth(index){
+  index = Math.max(0, Math.min(monthEls.length - 1, index));
+  currentMonthIndex = index;
+  monthEls[index].scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function lockNav(){
+  navLocked = true;
+  setTimeout(() => { navLocked = false; }, 650);
+}
+
+window.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  if(navLocked) return;
+  updateCurrentIndexFromScroll();
+  if(e.deltaY > 0){
+    goToMonth(currentMonthIndex + 1);
+  } else if(e.deltaY < 0){
+    goToMonth(currentMonthIndex - 1);
+  }
+  lockNav();
+}, { passive: false });
+
+window.addEventListener('keydown', (e) => {
+  const nextKeys = ['ArrowDown', 'ArrowRight', 'PageDown'];
+  const prevKeys = ['ArrowUp', 'ArrowLeft', 'PageUp'];
+  if(nextKeys.includes(e.key) || prevKeys.includes(e.key)){
+    e.preventDefault();
+    if(navLocked) return;
+    updateCurrentIndexFromScroll();
+    goToMonth(currentMonthIndex + (nextKeys.includes(e.key) ? 1 : -1));
+    lockNav();
+  }
+});
+
+/* Swipe touch (mobile/tablet): stessa logica a scatti della rotella */
+let touchStartY = null;
+const SWIPE_THRESHOLD = 30; // px minimi per considerarlo uno swipe valido
+
+window.addEventListener('touchstart', (e) => {
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+window.addEventListener('touchmove', (e) => {
+  e.preventDefault(); // blocca lo scroll nativo continuo
+}, { passive: false });
+
+window.addEventListener('touchend', (e) => {
+  if(touchStartY === null || navLocked) return;
+  const touchEndY = e.changedTouches[0].clientY;
+  const deltaY = touchStartY - touchEndY;
+  if(Math.abs(deltaY) > SWIPE_THRESHOLD){
+    updateCurrentIndexFromScroll();
+    goToMonth(currentMonthIndex + (deltaY > 0 ? 1 : -1));
+    lockNav();
+  }
+  touchStartY = null;
+});
+
+
+
 </script>
 
 </body>
