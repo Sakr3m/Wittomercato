@@ -3,22 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>
-  // Calcolo la scala SUBITO, prima che il resto della pagina venga disegnato.
-  // Dipende solo dalla larghezza della finestra (sempre disponibile all'istante),
-  // mai dall'altezza del contenuto (che invece dipende da font/immagini e
-  // causava il "flash" iniziale con proporzioni sbagliate).
-  (function(){
-    var DESIGN_WIDTH = 1075;
-    function setScale(){
-      var scale = window.innerWidth / DESIGN_WIDTH;
-      document.documentElement.style.setProperty('--page-scale', scale);
-    }
-    setScale();
-    window.addEventListener('resize', setScale);
-    window.__setPageScale = setScale;
-  })();
-</script>
 <title>Calciomercato Videoludico</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -58,7 +42,7 @@
 
   /* ---------- HEADER ---------- */
   header{
-    padding: 72px 24px 48px;
+    padding: 1.75em 1.5em 1em;
     text-align:center;
     position: relative;
   }
@@ -66,7 +50,7 @@
   h1{
     font-family:'Anton', sans-serif;
     font-weight: 400;
-    font-size: clamp(36px, 7.5vw, 66px);
+    font-size: clamp(2.25em, 7.5vw, 4.125em);
     letter-spacing: 0.01em;
     margin: 0;
     line-height: 0.95;
@@ -77,7 +61,7 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    filter: drop-shadow(3px 3px 0 rgba(0,0,0,0.55)) drop-shadow(6px 6px 0 rgba(255,61,84,0.18));
+    filter: drop-shadow(0.1875em 0.1875em 0 rgba(0,0,0,0.55)) drop-shadow(0.375em 0.375em 0 rgba(255,61,84,0.18));
   }
 
   header{
@@ -86,50 +70,29 @@
 
   /* ---------- TIMELINE / MONTHS ---------- */
   .timeline{
-    max-width: 780px;
+    max-width: 48.75em;
     margin: 0 auto;
-    padding: 64px 20px 120px;
+    padding: 3em 1.25em 7.5em;
     position: relative;
   }
 
   .month{
-    margin-bottom: 76px;
+    margin-bottom: 7em;
     position: relative;
   }
 
   .month-header{
     display:flex;
     align-items:baseline;
-    gap: 16px;
-    margin-bottom: 28px;
-    cursor: pointer;
+    gap: 1em;
+    margin-bottom: 1.75em;
     user-select: none;
-  }
-
-  .chevron{
-    width: 11px;
-    height: 11px;
-    border-right: 2px solid var(--text-mid);
-    border-bottom: 2px solid var(--text-mid);
-    transform: rotate(45deg);
-    transition: transform 0.3s ease;
-    flex-shrink: 0;
-    margin-left: 4px;
-  }
-
-  .month.collapsed .chevron{
-    transform: rotate(-45deg);
-  }
-
-  .matches{
-    overflow: hidden;
-    transition: max-height 0.35s ease, opacity 0.25s ease;
   }
 
   .month-name{
     font-family:'Anton', sans-serif;
     font-weight:400;
-    font-size: 32px;
+    font-size: 2em;
     letter-spacing: 0.03em;
     color: var(--text-hi);
     text-transform: uppercase;
@@ -137,14 +100,14 @@
 
   .month-index{
     font-family:'JetBrains Mono', monospace;
-    font-size: 13px;
+    font-size: 0.8125em;
     color: var(--text-low);
     letter-spacing: 0.1em;
   }
 
   .month-rule{
     flex:1;
-    height:1px;
+    height:0.0625em;
     background: linear-gradient(90deg, var(--line), transparent);
     align-self:center;
   }
@@ -153,39 +116,39 @@
   .matches{
     display:flex;
     flex-direction:column;
-    gap: 18px;
+    gap: 1.125em;
   }
 
   .match{
     display:grid;
-    grid-template-columns: 1fr 74px 1fr;
+    grid-template-columns: 1fr 4.625em 1fr;
     align-items:stretch;
     gap: 0;
   }
 
   .slot{
     background: var(--bg-card);
-    border: 1px solid var(--line);
+    border: 0.0625em solid var(--line);
     padding: 0;
     display:flex;
     flex-direction:row;
     align-items:stretch;
-    height: 112px;
+    height: 7em;
     position: relative;
     overflow: hidden;
   }
 
   .slot.left{
-    border-radius: 10px 0 0 10px;
+    border-radius: 0.625em 0 0 0.625em;
     border-right: none;
   }
   .slot.right{
-    border-radius: 0 10px 10px 0;
+    border-radius: 0 0.625em 0.625em 0;
     border-left: none;
   }
 
   .cover{
-    width: 78px;
+    width: 4.875em;
     flex-shrink: 0;
     background-size: cover;
     background-position: center;
@@ -193,12 +156,12 @@
   }
   .slot.left .cover{
     background-image: linear-gradient(180deg, var(--left-a), var(--left-b));
-    border-right: 3px solid var(--left-a);
+    border-right: 0.1875em solid var(--left-a);
     transform-origin: right center;
   }
   .slot.right .cover{
     background-image: linear-gradient(180deg, var(--right-a), var(--right-b));
-    border-left: 3px solid var(--right-a);
+    border-left: 0.1875em solid var(--right-a);
     transform-origin: left center;
   }
 
@@ -208,7 +171,7 @@
     display:flex;
     flex-direction:column;
     justify-content:center;
-    padding: 16px 20px;
+    padding: 1em 1.25em;
     position: relative;
   }
   .slot.left .slot-content{ text-align:left; align-items:flex-start; }
@@ -217,7 +180,7 @@
   .game-title{
     font-family:'Anton', sans-serif;
     font-weight:400;
-    font-size: 22px;
+    font-size: 1.375em;
     letter-spacing:0.01em;
     line-height: 1.12;
     color: var(--text-hi);
@@ -227,7 +190,7 @@
   .game-title a{
     color: inherit;
     text-decoration: none;
-    border-bottom: 1px dotted var(--text-low);
+    border-bottom: 0.0625em dotted var(--text-low);
     transition: border-color 0.2s ease, color 0.2s ease;
   }
 
@@ -237,34 +200,34 @@
 
   .postponed-tag{
     position: absolute;
-    top: 10px;
+    top: 0.625em;
     font-family:'JetBrains Mono', monospace;
-    font-size: 9.5px;
+    font-size: 0.5938em;
     font-weight: 500;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: #ffb23d;
     background: rgba(255,178,61,0.1);
-    border: 1px solid rgba(255,178,61,0.35);
-    border-radius: 4px;
-    padding: 2px 6px;
+    border: 0.0625em solid rgba(255,178,61,0.35);
+    border-radius: 0.25em;
+    padding: 0.125em 0.375em;
     white-space: nowrap;
   }
 
-  .slot.left .postponed-tag{ right: 14px; }
-  .slot.right .postponed-tag{ left: 14px; }
+  .slot.left .postponed-tag{ right: 0.875em; }
+  .slot.right .postponed-tag{ left: 0.875em; }
 
   .slot-content.has-postponed{
-    padding-top: 36px;
+    padding-top: 2.25em;
   }
 
   .player-name{
     font-family:'JetBrains Mono', monospace;
-    font-size: 11.5px;
+    font-size: 0.7188em;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--text-mid);
-    margin-top: 7px;
+    margin-top: 0.4375em;
   }
 
   .player-name.left-tag::before{ content:"— "; color: var(--left-a); }
@@ -273,8 +236,8 @@
   /* ---------- VS BADGE ---------- */
   .vs{
     background: var(--bg-panel);
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
+    border-top: 0.0625em solid var(--line);
+    border-bottom: 0.0625em solid var(--line);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -282,8 +245,8 @@
   }
 
   .vs-inner{
-    width: 52px;
-    height: 70px;
+    width: 3.25em;
+    height: 4.375em;
     -webkit-mask-image: var(--vs-img);
     mask-image: var(--vs-img);
     -webkit-mask-size: contain;
@@ -293,22 +256,22 @@
     -webkit-mask-position: center;
     mask-position: center;
     background: linear-gradient(150deg, var(--left-a) 0%, var(--left-b) 42%, var(--right-b) 58%, var(--right-a) 100%);
-    filter: drop-shadow(0 0 10px rgba(255,90,80,0.35)) drop-shadow(0 0 10px rgba(61,90,255,0.25));
+    filter: drop-shadow(0 0 0.625em rgba(255,90,80,0.35)) drop-shadow(0 0 0.625em rgba(61,90,255,0.25));
   }
 
   /* ---------- EMPTY / TBD MONTH ---------- */
   .month.tbd .matches{
-    gap: 10px;
+    gap: 0.625em;
   }
 
   .tbd-row{
-    border: 1px dashed var(--line);
-    border-radius: 10px;
-    padding: 22px;
+    border: 0.0625em dashed var(--line);
+    border-radius: 0.625em;
+    padding: 1.375em;
     text-align:center;
     color: var(--text-low);
     font-family:'JetBrains Mono', monospace;
-    font-size: 12px;
+    font-size: 0.75em;
     letter-spacing: 0.15em;
     text-transform: uppercase;
   }
@@ -320,43 +283,34 @@
 
   footer{
     text-align:center;
-    padding: 40px 20px 60px;
+    padding: 2.5em 1.25em 3.75em;
     color: var(--text-low);
     font-family:'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 0.6875em;
     letter-spacing: 0.2em;
     text-transform: uppercase;
   }
 
-  /* ---------- SCALING UNIFORME ---------- */
-  /* Il contenuto ha una larghezza fissa (design width) e viene scalato
-     interamente in base alla larghezza dello schermo, così la resa è
-     identica (stesse proporzioni) su qualsiasi dispositivo o monitor. */
+  /* ---------- SCALING UNIFORME (100% CSS, nessun JS) ---------- */
+  /* La dimensione di riferimento è 16px a una larghezza di progetto di
+     1075px. Impostando il font-size della radice in vw con lo stesso
+     rapporto, e usando "em" per ogni misura del layout, tutto il resto
+     scala in automatico col ridimensionamento del browser, calcolato
+     dal motore di rendering stesso: niente più flash iniziali o
+     differenze tra dispositivi dovute a timing di script. */
+  html{
+    font-size: 1.414vw;
+  }
+
   html, body{
     overflow-x: hidden;
-  }
-
-  #scale-outer{
-    width: 100%;
-    overflow: hidden;
-  }
-
-  #scale-inner{
-    width: 1075px;
-    margin: 0 auto;
-    transform-origin: top center;
-    transform: scale(var(--page-scale, 1));
   }
 </style>
 </head>
 <body>
 
-<div id="scale-outer">
-  <div id="scale-inner">
-    <div class="timeline" id="timeline"></div>
-    <footer>Sakrem — The Forgotten Shelf</footer>
-  </div>
-</div>
+<div class="timeline" id="timeline"></div>
+<footer>Sakrem — The Forgotten Shelf</footer>
 
 <script>
 /* ============================================================
@@ -532,7 +486,6 @@ function renderMonth(mese){
     <span class="month-name">${mese.nome}</span>
     <span class="month-index">${mese.numero}</span>
     <span class="month-rule"></span>
-    <span class="chevron"></span>
   `;
   wrapper.appendChild(header);
 
@@ -573,61 +526,11 @@ function renderMonth(mese){
 
   wrapper.appendChild(matchesEl);
 
-  // Accordion: aperto di default, un click sull'header apre/chiude
-  header.addEventListener('click', () => {
-    const isCollapsed = wrapper.classList.contains('collapsed');
-    if(isCollapsed){
-      wrapper.classList.remove('collapsed');
-      matchesEl.style.maxHeight = matchesEl.scrollHeight + 'px';
-      matchesEl.style.opacity = '1';
-      setTimeout(() => { matchesEl.style.maxHeight = 'none'; }, 350);
-    } else {
-      matchesEl.style.maxHeight = matchesEl.scrollHeight + 'px';
-      requestAnimationFrame(() => {
-        wrapper.classList.add('collapsed');
-        matchesEl.style.maxHeight = '0px';
-        matchesEl.style.opacity = '0';
-      });
-    }
-  });
-
   return wrapper;
 }
 
 const timeline = document.getElementById('timeline');
 MESI.forEach(m => timeline.appendChild(renderMonth(m)));
-
-/* La SCALA VISIVA è già impostata subito in <head> (vedi script in alto),
-   qui ci occupiamo solo di calcolare l'altezza reale del contenuto scalato,
-   necessaria perché lo scroll della pagina funzioni correttamente. */
-const DESIGN_WIDTH = 1075;
-const scaleOuter = document.getElementById('scale-outer');
-const scaleInner = document.getElementById('scale-inner');
-
-function applyScale(){
-  const scale = window.innerWidth / DESIGN_WIDTH;
-  scaleOuter.style.height = (scaleInner.offsetHeight * scale) + 'px';
-}
-
-window.addEventListener('resize', applyScale);
-window.addEventListener('load', applyScale);
-applyScale();
-
-// Correzione ripetuta: qualunque sia la causa del ritardo (font, layout,
-// cache del browser...) ricalcoliamo l'altezza ogni 100ms per il primo
-// secondo e mezzo, così lo scroll risulta sempre corretto senza dover
-// interagire prima.
-let stabilizeCount = 0;
-const stabilizeInterval = setInterval(() => {
-  applyScale();
-  stabilizeCount++;
-  if(stabilizeCount > 15) clearInterval(stabilizeInterval);
-}, 100);
-
-// Ricalcola l'altezza anche dopo ogni apertura/chiusura di un mese
-// (la transizione max-height cambia l'altezza reale del contenuto)
-const resizeObserver = new ResizeObserver(() => applyScale());
-resizeObserver.observe(scaleInner);
 
 /* ============================================================
    NAVIGAZIONE A SCATTI: rotella e frecce direzionali passano
@@ -638,11 +541,35 @@ const monthEls = Array.from(document.querySelectorAll('.month'));
 let currentMonthIndex = 0;
 let navLocked = false;
 
+/* Lo scatto verso ogni mese deve fermarsi alla STESSA distanza dal
+   bordo superiore che ha Febbraio al caricamento (dovuta all'header
+   sopra di lui). Misuriamo quella distanza reale e la applichiamo
+   come scroll-margin-top a tutti i mesi: da quel punto in poi è il
+   browser stesso a fermare lo scroll nel punto giusto, in modo
+   nativo, qualunque sia la larghezza dello schermo. */
+function syncMonthScrollOffset(){
+  if(!monthEls.length) return;
+  const offset = Math.round(monthEls[0].getBoundingClientRect().top + window.scrollY);
+  monthEls.forEach(el => { el.style.scrollMarginTop = offset + 'px'; });
+  return offset;
+}
+let monthScrollOffset = syncMonthScrollOffset();
+window.addEventListener('resize', () => { monthScrollOffset = syncMonthScrollOffset(); });
+window.addEventListener('load', () => { monthScrollOffset = syncMonthScrollOffset(); });
+// I font web (Anton/Space Grotesk) possono cambiare di qualche pixel
+// l'altezza della testata una volta caricati: ricalcoliamo l'offset
+// a caricamento avvenuto, così su ogni dispositivo la misura resta
+// sempre quella reale e identica, indipendentemente da quanto ci
+// mettono i font a comparire.
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(() => { monthScrollOffset = syncMonthScrollOffset(); });
+}
+
 function updateCurrentIndexFromScroll(){
   let closest = 0;
   let closestDist = Infinity;
   monthEls.forEach((el, i) => {
-    const dist = Math.abs(el.getBoundingClientRect().top);
+    const dist = Math.abs(el.getBoundingClientRect().top - (monthScrollOffset || 0));
     if(dist < closestDist){ closestDist = dist; closest = i; }
   });
   currentMonthIndex = closest;
