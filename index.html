@@ -595,6 +595,15 @@ function applyScale(){
 
 window.addEventListener('resize', applyScale);
 window.addEventListener('load', applyScale);
+
+// I font (Anton, JetBrains Mono, ecc.) si caricano in modo asincrono e
+// possono cambiare l'altezza reale del testo dopo il primo render.
+// Ricalcoliamo le proporzioni non appena tutti i font sono pronti.
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(applyScale);
+}
+// Rete di sicurezza extra per qualsiasi altro reflow tardivo
+setTimeout(applyScale, 400);
 applyScale();
 
 // Ricalcola l'altezza anche dopo ogni apertura/chiusura di un mese
