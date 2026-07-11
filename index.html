@@ -737,7 +737,7 @@
   .game-title{
     font-family:'Anton', sans-serif;
     font-weight:400;
-    font-size: 1.17em;
+    font-size: 1.1275em;
     letter-spacing:0.01em;
     line-height: 1.12;
     color: var(--text-hi);
@@ -1540,13 +1540,20 @@ const MODAL_LAYOUT_VARIANTS = {
 let currentVoteMatch = null;
 let currentVoteSide = null;
 
-function openGameModal(matchesEl, info){
+let lastModalMatchesEl = null;
+
+function positionGameModalBox(matchesEl){
   const rect = matchesEl.getBoundingClientRect();
   const downNudge = 14; // "un pochino piu in basso" rispetto all'area esatta
   gameModalBox.style.width = rect.width + 'px';
   gameModalBox.style.height = rect.height + 'px';
   gameModalBox.style.left = rect.left + 'px';
   gameModalBox.style.top = (rect.top + downNudge) + 'px';
+}
+
+function openGameModal(matchesEl, info){
+  lastModalMatchesEl = matchesEl;
+  positionGameModalBox(matchesEl);
   gameModalCoverImg.style.backgroundImage = info.img ? `url('${info.img}')` : 'none';
   gameModalCoverImg.style.backgroundPosition = info.pos || 'center';
   gameModalTitle.textContent = info.titolo || '';
@@ -1575,6 +1582,30 @@ function closeGameModal(){
   voteInfoPanel.classList.remove('open');
   voteInfoBtn.classList.remove('open');
 }
+
+/* Se la finestra viene ridimensionata (o il telefono ruotato) MENTRE un
+   popup e' aperto, lo riposizioniamo/ridimensioniamo da capo, invece di
+   lasciarlo fermo alla misura calcolata all'apertura. Un piccolo debounce
+   evita di ricalcolare decine di volte al secondo durante il trascinamento
+   del bordo della finestra. */
+let resizeRepositionTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeRepositionTimer);
+  resizeRepositionTimer = setTimeout(() => {
+    if(gameModalBackdrop.classList.contains('open') && lastModalMatchesEl){
+      positionGameModalBox(lastModalMatchesEl);
+      layoutGameModalExtras();
+    }
+    document.querySelectorAll('.month-info-panel.open').forEach(panel => {
+      const btn = panel.previousElementSibling;
+      if(btn && btn.classList.contains('month-info-btn')) clampPanelWidth(panel, btn, true);
+    });
+    if(voteInfoPanel.classList.contains('open')){
+      const growsLeft = !gameModalBox.classList.contains('modal-variant-right');
+      clampPanelWidth(voteInfoPanel, voteInfoBtn, growsLeft);
+    }
+  }, 120);
+});
 
 /* Posiziona la casella voto e i due pulsanti (voto/info) misurando il
    rendering REALE di data e titolo, invece di indovinare uno scarto fisso
@@ -1750,7 +1781,7 @@ voteConfirmBtn.addEventListener('click', () => {
 
   const entry = getMatchStateEntry(currentVoteMatch.id);
   entry.votes[currentVoteSide] = val;
-  persistMatchState(currentVoteMatch.id, `Voto salvato in locale (${currentVoteMatch.id}-${currentVoteSide}). Sincronizzazione remota non ancora collegata.`);
+  persistMatchState(currentVoteMatch.id, `Voto salvato in locale (${currentVoteMatch.id}-${currentVoteSide}).`);
   registerInteraction();
 
   gameModalScoreValue.textContent = val;
@@ -1905,6 +1936,8 @@ function getMatchStateEntry(matchId){
   return winnersState[matchId];
 }
 
+const SYNC_WORKER_URL = 'https://wittomercato.sl-eternal-lux.workers.dev';
+
 function persistMatchState(matchId, toastText){
   const entry = winnersState[matchId];
   const isEmpty = !entry || (!entry.winner && (!entry.votes || (!entry.votes.L && !entry.votes.R)));
@@ -1914,11 +1947,24 @@ function persistMatchState(matchId, toastText){
     localStorage.setItem('winners_draft', JSON.stringify(local));
   }catch(e){}
 
-  // TODO: quando il Worker (Cloudflare/Netlify) con il token GitHub sara pronto,
-  // sostituire/affiancare questo salvataggio locale con una chiamata reale, tipo:
-  // fetch('https://<url-del-worker>', { method: 'POST', body: JSON.stringify({ matchId, ...entry }) });
-
   showAdminToast(toastText);
+
+  // Sincronizzazione remota reale: il Worker scrive su winners.json usando
+  // il token GitHub (mai esposto qui). Il salvataggio in locale sopra resta
+  // comunque valido subito, indipendentemente dall'esito di questa chiamata.
+  fetch(SYNC_WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ matchId, entry: isEmpty ? null : entry })
+  }).then(res => {
+    if(res.ok){
+      showAdminToast(toastText + ' Sincronizzato su GitHub.');
+    } else {
+      showAdminToast(toastText + ' (salvato in locale, ma la sincronizzazione remota e fallita: riprova piu tardi)');
+    }
+  }).catch(() => {
+    showAdminToast(toastText + ' (salvato in locale, connessione al server di sincronizzazione non riuscita)');
+  });
 }
 
 /* Da mouse: il pulsante compare al passaggio del mouse sul riquadro
@@ -2056,7 +2102,7 @@ function declareWinner(m, side, row){
 
   persistMatchState(m.id, isUndo
     ? `Decretazione annullata (${m.id}).`
-    : `Vincitore salvato in locale (${m.id}). Sincronizzazione remota non ancora collegata.`);
+    : `Vincitore salvato in locale (${m.id}).`);
   registerInteraction();
 }
 
