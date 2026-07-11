@@ -12,6 +12,7 @@
   // caricamento.
   (function(){
     if(/Android/i.test(navigator.userAgent)){
+      document.documentElement.classList.add('is-android');
       var style = document.createElement('style');
       style.textContent = 'html{ font-size: 1.86648vw !important; }';
       document.head.appendChild(style);
@@ -142,6 +143,11 @@
     align-items:center;
     justify-content:center;
     transition: background 0.2s ease, color 0.2s ease;
+  }
+  .is-android .month-info-btn{
+    width: 4em;
+    height: 4em;
+    font-size: 1.875em;
   }
   .month-info-btn:hover, .month-info-btn.open{
     background: rgba(255,255,255,0.14);
@@ -465,6 +471,11 @@
     justify-content:center;
     transition: background 0.2s ease, filter 0.15s ease;
   }
+  .is-android .vote-trigger-btn{
+    width: 4em;
+    height: 4em;
+    font-size: 1.875em;
+  }
   .vote-trigger-btn:hover{
     background: rgba(255,255,255,0.16);
     filter: brightness(1.1);
@@ -490,6 +501,11 @@
     align-items:center;
     justify-content:center;
     transition: background 0.2s ease;
+  }
+  .is-android .vote-info-btn{
+    width: 4em;
+    height: 4em;
+    font-size: 1.875em;
   }
   .vote-info-btn:hover, .vote-info-btn.open{
     background: rgba(255,255,255,0.16);
@@ -594,6 +610,11 @@
     align-items:center;
     justify-content:center;
     transition: background 0.2s ease;
+  }
+  .is-android .vote-confirm-btn{
+    width: 4em;
+    height: 4em;
+    font-size: 2.1em;
   }
   .vote-confirm-btn:hover{ background: rgba(90,200,130,0.4); }
 
