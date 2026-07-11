@@ -1028,11 +1028,15 @@
     background: rgba(255,255,255,0.2);
     filter: brightness(1.1);
   }
-  /* Compare al passaggio del mouse sul riquadro del giocatore.
-     Su touch non c'e hover: li si usa la pressione lunga (3s),
-     gestita via JS su tutto lo slot. */
-  .slot-content:hover .admin-declare-btn{
-    display: inline-block;
+  /* Compare al passaggio del mouse sul riquadro del giocatore. Limitato
+     ai dispositivi con un puntatore preciso vero (hover:hover + pointer:fine):
+     molti browser touch simulano un ":hover" temporaneo al tocco, il che
+     farebbe comparire questo pulsante anche su mobile, in conflitto visivo
+     con la pressione lunga (che invece dichiara subito, senza pulsante). */
+  @media (hover: hover) and (pointer: fine){
+    .slot-content:hover .admin-declare-btn{
+      display: inline-block;
+    }
   }
 
   /* Limite di interazioni orario raggiunto: i pulsanti restano visibili
@@ -1540,8 +1544,22 @@ let currentVoteSide = null;
 
 let lastModalMatchesEl = null;
 
+const isAndroidDevice = /Android/i.test(navigator.userAgent);
+
 function positionGameModalBox(matchesEl){
   const rect = matchesEl.getBoundingClientRect();
+
+  if(isAndroidDevice){
+    // Su telefono, soprattutto ruotato in orizzontale, seguire l'area
+    // esatta del mese finiva troppo in basso o fuori vista: qui centriamo
+    // semplicemente il popup nella pagina, sia ritratto che ruotato.
+    gameModalBox.style.width = rect.width + 'px';
+    gameModalBox.style.height = rect.height + 'px';
+    gameModalBox.style.left = Math.max(0, (window.innerWidth - rect.width) / 2) + 'px';
+    gameModalBox.style.top = Math.max(0, (window.innerHeight - rect.height) / 2) + 'px';
+    return;
+  }
+
   const downNudge = 14; // "un pochino piu in basso" rispetto all'area esatta
   gameModalBox.style.width = rect.width + 'px';
   gameModalBox.style.height = rect.height + 'px';
