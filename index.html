@@ -1684,9 +1684,27 @@ function layoutGameModalExtras(){
     const triggerBottom = infoBottom + infoH + btnGap;
     voteTriggerBtn.style.bottom = triggerBottom + 'px';
 
-    // Il pannello regole si apre sopra entrambi i pulsanti.
+    // Il pannello regole si apre sopra entrambi i pulsanti (desktop), oppure
+    // di lato al pulsante info (Android, su richiesta: mai sopra, sempre
+    // affiancato, verticalmente alla sua stessa altezza).
     const triggerH = voteTriggerBtn.offsetHeight;
-    voteInfoPanel.style.bottom = (triggerBottom + triggerH + gapPx) + 'px';
+    if(isAndroidDevice){
+      const btnRect = voteInfoBtn.getBoundingClientRect();
+      const sideGapPx = 14;
+      const growsLeft = !gameModalBox.classList.contains('modal-variant-right');
+      if(growsLeft){
+        voteInfoPanel.style.right = (boxRect.right - btnRect.left + sideGapPx) + 'px';
+        voteInfoPanel.style.left = 'auto';
+      } else {
+        voteInfoPanel.style.left = (btnRect.right - boxRect.left + sideGapPx) + 'px';
+        voteInfoPanel.style.right = 'auto';
+      }
+      const btnCenterFromBoxBottom = boxRect.bottom - btnRect.top - (btnRect.height / 2);
+      voteInfoPanel.style.bottom = btnCenterFromBoxBottom + 'px';
+      voteInfoPanel.style.transform = 'translateY(50%)';
+    } else {
+      voteInfoPanel.style.bottom = (triggerBottom + triggerH + gapPx) + 'px';
+    }
   });
 }
 
