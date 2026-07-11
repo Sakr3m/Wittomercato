@@ -1903,9 +1903,22 @@ async function loadWinners(){
   }catch(e){
     console.warn('winners.json non raggiungibile (probabile apertura locale via file://): uso solo i dati incorporati nell\'HTML.', e);
   }
+
+  if(remote){
+    // Il file condiviso e' raggiungibile: ora che la sincronizzazione col
+    // Worker funziona davvero, e' LUI la fonte di verita', non piu la bozza
+    // locale di questo browser. La ripuliamo, altrimenti un vecchio stato
+    // salvato qui prima (es. un vincitore poi cambiato da un altro
+    // dispositivo) resterebbe "congelato" per sempre su questo dispositivo,
+    // sovrascrivendo ad ogni ricarica quello che dicono davvero gli altri.
+    try{ localStorage.removeItem('winners_draft'); }catch(e){}
+    return remote;
+  }
+
+  // Remoto non raggiungibile: unico ripiego possibile, la bozza locale.
   let draft = {};
   try{ draft = JSON.parse(localStorage.getItem('winners_draft') || '{}'); }catch(e){}
-  return Object.assign({}, remote || {}, draft);
+  return draft;
 }
 
 function applyWinners(winners){
