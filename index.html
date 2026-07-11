@@ -5,13 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark">
 <script>
-  // Su Android ingrandiamo tutto il layout del 20% rispetto al valore base
-  // (1.414vw). Eseguito subito nell'head, prima del render, per evitare
-  // qualsiasi flash o salto di layout dopo il caricamento.
+  // Su Android ingrandiamo tutto il layout del 32% rispetto al valore base
+  // (1.414vw): +20% della prima richiesta, +10% aggiuntivo di questa,
+  // composti insieme (1.2 x 1.1 = 1.32). Eseguito subito nell'head, prima
+  // del render, per evitare qualsiasi flash o salto di layout dopo il
+  // caricamento.
   (function(){
     if(/Android/i.test(navigator.userAgent)){
       var style = document.createElement('style');
-      style.textContent = 'html{ font-size: 1.6968vw !important; }';
+      style.textContent = 'html{ font-size: 1.86648vw !important; }';
       document.head.appendChild(style);
     }
   })();
@@ -19,7 +21,7 @@
 <title>Calciomercato Videoludico</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Unbounded:wght@600;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Unbounded:wght@600;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg-void: #07080f;
@@ -84,7 +86,7 @@
 
   /* ---------- TIMELINE / MONTHS ---------- */
   .timeline{
-    max-width: 48.75em;
+    max-width: 58.5em;
     margin: 0 auto;
     padding: 3em 1.25em 7.5em;
     position: relative;
@@ -101,6 +103,7 @@
     gap: 1em;
     margin-bottom: 1.75em;
     user-select: none;
+    position: relative;
   }
 
   .month-name{
@@ -124,6 +127,73 @@
     height:0.0625em;
     background: linear-gradient(90deg, var(--line), transparent);
     align-self:center;
+  }
+
+  .month-info-btn{
+    flex-shrink: 0;
+    width: 2em;
+    height: 2em;
+    border-radius: 50%;
+    border: 0.0625em solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.05);
+    color: var(--text-mid);
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.9375em;
+    font-weight: 600;
+    font-style: italic;
+    cursor: pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .month-info-btn:hover, .month-info-btn.open{
+    background: rgba(255,255,255,0.14);
+    color: var(--text-hi);
+  }
+
+  .month-info-panel{
+    position: absolute;
+    top: calc(100% + 0.5em);
+    right: 0;
+    width: min(40em, 95vw);
+    background: var(--bg-panel);
+    border: 0.0625em solid var(--line);
+    border-radius: 0.75em;
+    box-shadow: 0 1em 3em rgba(0,0,0,0.55);
+    padding: 1.25em 1.375em;
+    z-index: 50;
+    display: none;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.75em;
+    line-height: 1.55;
+    color: var(--text-mid);
+  }
+  .month-info-panel.open{ display: block; }
+
+  .month-info-panel h4{
+    margin: 0 0 0.6em;
+    font-family:'Anton', sans-serif;
+    font-weight: 400;
+    font-size: 1.3em;
+    letter-spacing: 0.02em;
+    color: var(--text-hi);
+    text-transform: uppercase;
+  }
+  .month-info-panel p{ margin: 0 0 0.9em; }
+  .month-info-panel p:last-child{ margin-bottom: 0; }
+  .month-info-panel strong{ color: var(--text-hi); }
+  .rule-btn-label{
+    display: inline-block;
+    font-family:'JetBrains Mono', monospace;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-hi);
+    background: rgba(255,255,255,0.1);
+    border: 0.0625em solid rgba(255,255,255,0.3);
+    border-radius: 0.25em;
+    padding: 0.05em 0.35em;
   }
 
   /* ---------- MATCH ROW ---------- */
@@ -152,6 +222,31 @@
     overflow: hidden;
   }
 
+  /* Animazione d'ingresso: le due targhette arrivano da direzioni opposte
+     ruotate, si scontrano al centro, rimbalzano leggermente indietro e
+     si assestano nella posizione finale. 1 secondo, un solo passaggio
+     al caricamento della pagina. Il tratto fino allo scontro e' a velocita'
+     costante (nessuna frenata prima dell'impatto): lo smooth resta solo
+     nel rimbalzo e nell'assestamento finale. */
+  @keyframes matchEntranceLeft{
+    0%{ transform: translateX(-160%) rotate(15deg); opacity: 0; animation-timing-function: linear; }
+    65%{ transform: translateX(0%) rotate(0deg); opacity: 1; }
+    80%{ transform: translateX(2.5%) rotate(-1.5deg); }
+    100%{ transform: translateX(0%) rotate(0deg); }
+  }
+  @keyframes matchEntranceRight{
+    0%{ transform: translateX(160%) rotate(-15deg); opacity: 0; animation-timing-function: linear; }
+    65%{ transform: translateX(0%) rotate(0deg); opacity: 1; }
+    80%{ transform: translateX(-2.5%) rotate(1.5deg); }
+    100%{ transform: translateX(0%) rotate(0deg); }
+  }
+  .slot.left{
+    animation: matchEntranceLeft 1s cubic-bezier(.22,.68,.35,1) both;
+  }
+  .slot.right{
+    animation: matchEntranceRight 1s cubic-bezier(.22,.68,.35,1) both;
+  }
+
   .slot.clickable{
     cursor: pointer;
     transition: filter 0.15s ease, transform 0.15s ease;
@@ -167,18 +262,15 @@
     inset: 0;
     background: rgba(4,5,10,0.8);
     display: none;
-    align-items: center;
-    justify-content: center;
     z-index: 1000;
-    padding: 1.5em;
   }
 
   .game-modal-backdrop.open{
-    display: flex;
+    display: block;
   }
 
   .game-modal-box{
-    position: relative;
+    position: fixed;
     background: var(--bg-panel);
     border: 0.0625em solid var(--line);
     border-radius: 1em;
@@ -202,7 +294,7 @@
     inset: 0;
     background-size: cover;
     background-position: center;
-    filter: blur(0.1em);
+    filter: blur(0.1em) brightness(0.65);
     transform: scale(1.08);
   }
 
@@ -235,18 +327,58 @@
     z-index: 2;
   }
 
-  /* Variante: testo e voto tutti a sinistra (voto a metà altezza tra titolo e data) */
+  /* Variante: testo e voto tutti a sinistra */
   .modal-variant-left .game-modal-top-bar{
     justify-content: flex-start;
   }
 
-  .modal-variant-left .game-modal-score{
+  /* La casella voto riempie quasi tutto lo spazio verticale tra la data
+     e il titolo: top/bottom vengono impostati via JS in base al rendering
+     reale di entrambi (varia da gioco a gioco, es. titoli su due righe),
+     qui restano solo lato, larghezza e aspetto. */
+  .game-modal-score{
     position: absolute;
-    left: 1.5em;
-    top: 50%;
-    right: auto;
-    transform: translateY(-50%);
+    z-index: 2;
+    width: auto;
+    min-width: 5.5em;
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.2em;
+    background: rgba(255,178,61,0.45);
+    border-radius: 0.6em;
+    box-shadow: 0 0.35em 1em rgba(0,0,0,0.5);
+    padding: 0.5em 0.6em;
   }
+  .game-modal-score.visible{ display: flex; }
+
+  .game-modal-score-label{
+    align-self: flex-start;
+    font-family:'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 1.125em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #0a0a12;
+  }
+
+  .game-modal-score-value{
+    align-self: stretch;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family:'Anton', sans-serif;
+    font-weight: 400;
+    font-size: 6.8em;
+    line-height: 1;
+    color: #0a0a12;
+    white-space: nowrap;
+  }
+
+  .modal-variant-left .game-modal-score{ left: 1.5em; }
+  .modal-variant-right .game-modal-score{ right: 1.5em; }
 
   /* Variante: titolo e possessore spostati a destra */
   .modal-variant-right .game-modal-info{
@@ -266,7 +398,7 @@
   .game-modal-date{
     font-family:'Anton', sans-serif;
     font-weight: 400;
-    font-size: 1.75em;
+    font-size: 2em;
     letter-spacing: 0.01em;
     color: #ffb23d;
     text-transform: uppercase;
@@ -289,13 +421,6 @@
     margin-top: 0.6em;
   }
 
-  .game-modal-score{
-    font-family:'JetBrains Mono', monospace;
-    font-size: 0.8em;
-    color: var(--text-low);
-    text-shadow: 0 0.15em 0.6em rgba(0,0,0,0.85);
-  }
-
   .game-modal-close{
     position: absolute;
     top: 0.75em;
@@ -315,6 +440,234 @@
     justify-content:center;
   }
 
+  /* ---------- VOTAZIONE (pulsanti + pannello) ----------
+     Il pulsante voto e quello info stanno impilati verticalmente, stessa
+     parte OPPOSTA rispetto al testo (variante modal-variant-left/right).
+     Il "bottom" preciso di entrambi (e del pannello regole) viene calcolato
+     da JS ad ogni apertura del popup, perche' dipende dall'altezza reale
+     del titolo (che varia da gioco a gioco, anche su piu' righe): solo
+     misurando il rendering effettivo il centro del pulsante info puo'
+     combaciare esattamente col punto piu' basso del titolo, su qualunque
+     schermo. Qui in CSS restano solo dimensione e lato orizzontale. */
+  .vote-trigger-btn{
+    position: absolute;
+    right: 1.5em;
+    z-index: 3;
+    width: 2em;
+    height: 2em;
+    border-radius: 50%;
+    background: rgba(7,8,15,0.6);
+    border: 0.0625em solid rgba(255,255,255,0.3);
+    color: #ffb23d;
+    font-size: 0.9375em;
+    line-height: 1;
+    cursor: pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: background 0.2s ease, filter 0.15s ease;
+  }
+  .vote-trigger-btn:hover{
+    background: rgba(255,255,255,0.16);
+    filter: brightness(1.1);
+  }
+  .modal-variant-right .vote-trigger-btn{ right: auto; left: 1.5em; }
+
+  .vote-info-btn{
+    position: absolute;
+    right: 1.5em;
+    z-index: 3;
+    width: 2em;
+    height: 2em;
+    border-radius: 50%;
+    border: 0.0625em solid rgba(255,255,255,0.3);
+    background: rgba(7,8,15,0.6);
+    color: var(--text-hi);
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.9375em;
+    font-weight: 600;
+    font-style: italic;
+    cursor: pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: background 0.2s ease;
+  }
+  .vote-info-btn:hover, .vote-info-btn.open{
+    background: rgba(255,255,255,0.16);
+  }
+  .modal-variant-right .vote-info-btn{ right: auto; left: 1.5em; }
+
+  .vote-info-panel{
+    position: absolute;
+    right: 1.5em;
+    z-index: 50;
+    width: min(40em, 95vw);
+    background: var(--bg-panel);
+    border: 0.0625em solid var(--line);
+    border-radius: 0.75em;
+    box-shadow: 0 1em 3em rgba(0,0,0,0.55);
+    padding: 1.1em 1.25em;
+    display: none;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.7em;
+    line-height: 1.55;
+    color: var(--text-mid);
+  }
+  .vote-info-panel.open{ display: block; }
+  .vote-info-panel h4{
+    margin: 0 0 0.6em;
+    font-family:'Anton', sans-serif;
+    font-weight: 400;
+    font-size: 1.3em;
+    letter-spacing: 0.02em;
+    color: var(--text-hi);
+    text-transform: uppercase;
+  }
+  .vote-info-panel p{ margin: 0 0 0.8em; }
+  .vote-info-panel p:last-child{ margin-bottom: 0; }
+  .vote-info-panel strong{ color: var(--text-hi); }
+  .modal-variant-right .vote-info-panel{ right: auto; left: 1.5em; }
+
+  .vote-panel-overlay{
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(4,5,10,0.6);
+    backdrop-filter: blur(0.125em);
+  }
+  .vote-panel-overlay.open{ display: flex; }
+
+  .vote-panel-row{
+    display: flex;
+    align-items: center;
+    gap: 2em;
+  }
+  .modal-variant-right .vote-panel-row{ flex-direction: row-reverse; }
+
+  .vote-panel-box{
+    width: 18em;
+    height: 18em;
+    background: var(--bg-panel);
+    border: 0.1875em solid var(--line);
+    border-radius: 1.5em;
+    box-shadow: 0 1.5em 4em rgba(0,0,0,0.65);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+  }
+
+  .vote-panel-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.95em;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-low);
+  }
+
+  .vote-input{
+    width: 11em;
+    background: transparent;
+    border: none;
+    text-align: center;
+    font-family:'Anton', sans-serif;
+    font-size: 5.1em;
+    color: var(--text-hi);
+    outline: none;
+    padding: 0.1em 0 0.15em;
+  }
+
+  .vote-confirm-btn{
+    width: 2em;
+    height: 2em;
+    border-radius: 50%;
+    border: 0.0625em solid rgba(120,220,150,0.5);
+    background: rgba(90,200,130,0.25);
+    color: var(--text-hi);
+    font-size: 1.05em;
+    line-height: 1;
+    cursor: pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: background 0.2s ease;
+  }
+  .vote-confirm-btn:hover{ background: rgba(90,200,130,0.4); }
+
+  /* ---------- POPUP RINVIO ---------- */
+  .postponed-modal-backdrop{
+    position: fixed;
+    inset: 0;
+    background: rgba(4,5,10,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+    padding: 1.5em;
+  }
+  .postponed-modal-backdrop.open{ display: flex; }
+
+  .postponed-modal-box{
+    position: relative;
+    background: var(--bg-panel);
+    border: 0.0625em solid var(--line);
+    border-radius: 1em;
+    box-shadow: 0 1.5em 4em rgba(0,0,0,0.6);
+    width: min(26em, 90vw);
+    padding: 2.25em 1.75em 1.75em;
+    text-align: center;
+  }
+
+  .postponed-modal-close{
+    position: absolute;
+    top: 0.75em;
+    right: 0.75em;
+    width: 2em;
+    height: 2em;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 0.0625em solid rgba(255,255,255,0.2);
+    color: var(--text-hi);
+    font-size: 1em;
+    line-height: 1;
+    cursor: pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .postponed-modal-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.75em;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #ff6b6b;
+    margin-bottom: 0.5em;
+  }
+
+  .postponed-modal-game{
+    font-family:'Anton', sans-serif;
+    font-weight: 400;
+    font-size: 1.5em;
+    letter-spacing: 0.01em;
+    color: var(--text-hi);
+    text-transform: uppercase;
+    line-height: 1.15;
+    margin-bottom: 0.75em;
+  }
+
+  .postponed-modal-date{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 1.375em;
+    font-weight: 600;
+    color: #ffb23d;
+  }
+
   .slot.left{
     border-radius: 0.625em 0 0 0.625em;
     border-right: none;
@@ -330,16 +683,42 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    position: relative;
   }
   .slot.left .cover{
     background-image: linear-gradient(180deg, var(--left-a), var(--left-b));
-    border-right: 0.1875em solid var(--left-a);
     transform-origin: right center;
   }
   .slot.right .cover{
     background-image: linear-gradient(180deg, var(--right-a), var(--right-b));
-    border-left: 0.1875em solid var(--right-a);
     transform-origin: left center;
+  }
+
+  /* Striscetta di fazione: doppia larghezza rispetto al bordo originale,
+     con un lento movimento del gradiente per un effetto "liquido". */
+  .slot.left .cover::after,
+  .slot.right .cover::after{
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 0.375em;
+    background-size: 100% 300%;
+    animation: factionStripeFlow 5s ease-in-out infinite;
+  }
+  .slot.left .cover::after{
+    right: 0;
+    background-image: linear-gradient(180deg, var(--left-b), var(--left-a), var(--left-b), var(--left-a));
+  }
+  .slot.right .cover::after{
+    left: 0;
+    background-image: linear-gradient(180deg, var(--right-b), var(--right-a), var(--right-b), var(--right-a));
+  }
+
+  @keyframes factionStripeFlow{
+    0%{ background-position: 0% 0%; }
+    50%{ background-position: 0% 100%; }
+    100%{ background-position: 0% 0%; }
   }
 
   .slot-content{
@@ -347,8 +726,9 @@
     min-width: 0;
     display:flex;
     flex-direction:column;
-    justify-content:center;
+    justify-content:flex-start;
     padding: 1em 1.25em;
+    padding-top: 2.55em;
     position: relative;
   }
   .slot.left .slot-content{ text-align:left; align-items:flex-start; }
@@ -357,7 +737,7 @@
   .game-title{
     font-family:'Anton', sans-serif;
     font-weight:400;
-    font-size: 1.375em;
+    font-size: 1.17em;
     letter-spacing:0.01em;
     line-height: 1.12;
     color: var(--text-hi);
@@ -379,7 +759,7 @@
     position: absolute;
     top: 0.625em;
     font-family:'JetBrains Mono', monospace;
-    font-size: 0.5938em;
+    font-size: 0.7126em;
     font-weight: 500;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -387,17 +767,19 @@
     background: rgba(255,107,107,0.1);
     border: 0.0625em solid rgba(255,107,107,0.35);
     border-radius: 0.25em;
-    padding: 0.125em 0.375em;
+    padding: 0.15em 0.45em;
     white-space: nowrap;
-    z-index: 2;
+    z-index: 3;
+    cursor: pointer;
+    transition: background 0.2s ease, filter 0.15s ease;
+  }
+  .postponed-tag:hover{
+    background: rgba(255,107,107,0.22);
+    filter: brightness(1.1);
   }
 
   .slot.left .postponed-tag{ right: 0.875em; }
   .slot.right .postponed-tag{ left: 0.875em; }
-
-  .slot-content.has-postponed{
-    padding-top: 2.25em;
-  }
 
   .slot-content.has-postponed::before{
     content: '';
@@ -418,47 +800,76 @@
     z-index: 2;
   }
 
+  .player-winner-row{
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    width: 100%;
+    margin-top: 1em;
+  }
+
+  .slot.right .player-winner-row{ flex-direction: row-reverse; }
+
+  /* Il trattino vive ANCORATO al riquadro del nome (right:100%/left:100%
+     rispetto al nome stesso, che e' il suo contenitore posizionato),
+     mai dentro il flusso della riga: comparsa e scomparsa non possono
+     quindi mai spostare il nome o nient'altro. Ancoraggio puramente
+     relativo, identico su qualunque schermo o dispositivo. */
+  .player-dash{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.7188em;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 0.15s ease;
+  }
+  .player-dash::before{ content:"—"; }
+  .slot.left .player-dash{ right: 100%; margin-right: 0.35em; color: var(--left-a); }
+  .slot.right .player-dash{ left: 100%; margin-left: 0.35em; color: var(--right-a); }
+
+  .player-winner-row.stage-badge .player-dash{
+    opacity: 0;
+  }
+
+  /* Il nome del giocatore NON si muove MAI: nessun transform, nessuna
+     variazione di posizione o dimensione tra stato neutro e vincitore,
+     nessun elemento di flusso intorno a lui che possa spingerlo.
+     Cambia solo il colore di sfondo/testo: e' l'animazione che si
+     costruisce intorno a lui, fermo, mai il contrario. */
   .player-name{
+    position: relative;
+    z-index: 2;
     font-family:'JetBrains Mono', monospace;
     font-size: 0.7188em;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--text-mid);
-    margin-top: 2em;
-  }
-
-  .player-name.left-tag::before{ content:"— "; color: var(--left-a); }
-  .player-name.right-tag::after{ content:" —"; color: var(--right-a); }
-
-  .player-name.winner{
-    position: relative;
-    z-index: 2;
-    color: #0a0a12;
     border-radius: 0.25em;
     padding: 0.15em 0.5em;
+    font-weight: 400;
+    background: transparent;
+    transition: background-color 0.15s ease, color 0.15s ease, font-weight 0.15s ease;
+  }
+
+  .player-winner-row.stage-badge .player-name{
+    color: #0a0a12;
     font-weight: 700;
-    margin-top: 0;
   }
 
-  .player-name.winner.left-tag::before{ color: #fff; }
-  .player-name.winner.right-tag::after{ color: #fff; }
+  .slot.left .player-winner-row.stage-badge .player-name{ background: var(--left-a); }
+  .slot.right .player-winner-row.stage-badge .player-name{ background: var(--right-a); }
 
-  .player-name.winner.dash-dark.left-tag::before{ color: #0a0a12; }
-  .player-name.winner.dash-dark.right-tag::after{ color: #0a0a12; }
-
-  .slot.left .player-name.winner{ background: var(--left-a); }
-  .slot.right .player-name.winner{ background: var(--right-a); }
-
-  .player-winner-row{
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-    margin-top: 2em;
-  }
-
-  .slot.right .player-winner-row{ flex-direction: row-reverse; }
-
+  /* La riga "vincitore" resta sempre presente come contenitore, a
+     contatto diretto col riquadro del nome (gap:0 sulla riga sopra):
+     i suoi pezzi (pallino, due meta della linea, riquadro) si accendono
+     uno alla volta in avanti, e si spengono uno alla volta al contrario
+     (ordine esattamente invertito), pilotati da JS con setTimeout. La
+     scritta "Vincitore" ha una sua animazione separata, lettera per
+     lettera, gestita a parte (vedi .wl-ch piu sotto). */
   .winner-line{
     flex: 1;
     position: relative;
@@ -474,16 +885,35 @@
     white-space: nowrap;
   }
 
+  /* Ogni lettera di "Vincitore" compare/scompare singolarmente: la
+     sequenza (in avanti dalla V, al contrario dalla E) e' scandita da
+     JS, qui c'e' solo la transizione della singola lettera. */
+  .wl-ch{
+    opacity: 0;
+    transition: opacity 0.11s linear;
+  }
+  .wl-ch.shown{ opacity: 1; }
+
   .winner-line::before, .winner-line::after{
     content: '';
     flex: 1;
     height: 0.0625em;
+    transform: scaleX(0);
+    transition: transform 0.45s ease;
   }
 
   .slot.left .winner-line{ color: var(--left-a); padding-right: 0.5em; }
-  .slot.left .winner-line::before, .slot.left .winner-line::after{ background: var(--left-a); }
+  .slot.left .winner-line::before, .slot.left .winner-line::after{ background: var(--left-a); transform-origin: right center; }
   .slot.right .winner-line{ color: var(--right-a); padding-left: 0.5em; }
-  .slot.right .winner-line::before, .slot.right .winner-line::after{ background: var(--right-a); }
+  .slot.right .winner-line::before, .slot.right .winner-line::after{ background: var(--right-a); transform-origin: left center; }
+
+  /* A sinistra il pallino sta dopo ::after (estremita aperta), quindi
+     ::after e' la meta "esterna" (vicino al pallino) e ::before e' la
+     meta "interna" (a contatto diretto col riquadro). A destra e' l'opposto. */
+  .slot.left .player-winner-row.stage-line-outer .winner-line::after{ transform: scaleX(1); }
+  .slot.left .player-winner-row.stage-line-inner .winner-line::before{ transform: scaleX(1); }
+  .slot.right .player-winner-row.stage-line-outer .winner-line::before{ transform: scaleX(1); }
+  .slot.right .player-winner-row.stage-line-inner .winner-line::after{ transform: scaleX(1); }
 
   .winner-dot{
     position: absolute;
@@ -492,7 +922,12 @@
     height: 0.5em;
     border-radius: 50%;
     background: currentColor;
-    transform: translateY(-50%);
+    transform: translateY(-50%) scale(0);
+    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  .player-winner-row.stage-dot .winner-dot{
+    transform: translateY(-50%) scale(1);
   }
 
   .slot.left .winner-dot{ right: 0; }
@@ -507,6 +942,14 @@
     align-items:center;
     justify-content:center;
     position: relative;
+    opacity: 0;
+    animation: vsFadeIn 0.5s ease forwards;
+    animation-delay: 0.65s;
+  }
+
+  @keyframes vsFadeIn{
+    from{ opacity: 0; }
+    to{ opacity: 1; }
   }
 
   .vs-inner{
@@ -546,16 +989,6 @@
     color: var(--text-low);
   }
 
-  footer{
-    text-align:center;
-    padding: 2.5em 1.25em 3.75em;
-    color: var(--text-low);
-    font-family:'JetBrains Mono', monospace;
-    font-size: 0.6875em;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-  }
-
   /* ---------- SCALING UNIFORME (100% CSS, nessun JS) ---------- */
   /* La dimensione di riferimento è 16px a una larghezza di progetto di
      1075px. Impostando il font-size della radice in vw con lo stesso
@@ -569,13 +1002,102 @@
 
   html, body{
     overflow-x: hidden;
+  }  /* ============================================================
+     PANNELLO GESTORI (decretazione vincitore interattiva)
+     ============================================================ */
+  .admin-declare-btn{
+    display: none;
+    position: absolute;
+    top: 0.625em;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.7126em;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+    border: 0.0625em solid rgba(255,255,255,0.3);
+    border-radius: 0.25em;
+    padding: 0.15em 0.45em;
+    white-space: nowrap;
+    cursor: pointer;
+    z-index: 3;
+    transition: background 0.2s ease, filter 0.15s ease;
+  }
+  .slot.left .admin-declare-btn{ right: 0.875em; }
+  .slot.right .admin-declare-btn{ left: 0.875em; }
+  .admin-declare-btn:hover{
+    background: rgba(255,255,255,0.2);
+    filter: brightness(1.1);
+  }
+  /* Compare al passaggio del mouse sul riquadro del giocatore.
+     Su touch non c'e hover: li si usa la pressione lunga (3s),
+     gestita via JS su tutto lo slot. */
+  .slot-content:hover .admin-declare-btn{
+    display: inline-block;
+  }
+
+  /* Limite di interazioni orario raggiunto: i pulsanti restano visibili
+     (per chiarezza) ma disattivati, in grigio, finche' non si resetta. */
+  body.rate-limited .admin-declare-btn,
+  body.rate-limited .vote-confirm-btn{
+    opacity: 0.4;
+    filter: grayscale(1);
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+
+  /* "Scelta di G": stessa fascia verticale del rinviato/dichiara vincitore,
+     ma sul lato OPPOSTO (esterno, verso la copertina). Nessun riquadro,
+     colore diverso da entrambe le fazioni, font quasi stilografico. */
+  .choice-g-label{
+    position: absolute;
+    top: 2.3em; /* nudge verso l'alto rispetto al calcolo teorico */
+    transform: translateY(-100%);
+    z-index: 3;
+    font-family:'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 0.75em;
+    line-height: 1;
+    color: #b48cff;
+    text-shadow: 0 0.1em 0.3em rgba(0,0,0,0.7);
+    pointer-events: none;
+    white-space: nowrap;
+    border-bottom: 0.125em solid #b48cff;
+    padding-bottom: 0.05em;
+  }
+  .slot.left .choice-g-label{ left: 1.75em; }
+  .slot.right .choice-g-label{ right: 1.75em; }
+
+  #adminToast{
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(10,10,18,0.95);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 0.75em;
+    padding: 0.6em 1em;
+    border-radius: 0.4em;
+    max-width: 90vw;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 600;
+  }
+  #adminToast.show{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 </style>
 </head>
 <body>
 
 <div class="timeline" id="timeline"></div>
-<footer>Sakrem — The Forgotten Shelf</footer>
 
 <div class="game-modal-backdrop" id="gameModalBackdrop">
   <div class="game-modal-box" id="gameModalBox">
@@ -584,13 +1106,37 @@
       <div class="game-modal-cover-img" id="gameModalCoverImg"></div>
       <div class="game-modal-top-bar">
         <div class="game-modal-date" id="gameModalDate"></div>
-        <div class="game-modal-score" id="gameModalScore"></div>
+      </div>
+      <div class="game-modal-score" id="gameModalScore">
+        <div class="game-modal-score-label">voto:</div>
+        <div class="game-modal-score-value" id="gameModalScoreValue"></div>
       </div>
       <div class="game-modal-info">
         <div class="game-modal-title" id="gameModalTitle"></div>
         <div class="game-modal-player" id="gameModalPlayer"></div>
       </div>
     </div>
+    <button type="button" class="vote-info-btn" id="voteInfoBtn" title="Regole del voto">i</button>
+    <div class="vote-info-panel" id="voteInfoPanel"></div>
+    <button type="button" class="vote-trigger-btn" id="voteTriggerBtn" title="Vota il gioco">★</button>
+    <div class="vote-panel-overlay" id="votePanelOverlay">
+      <div class="vote-panel-row" id="votePanelRow">
+        <div class="vote-panel-box">
+          <div class="vote-panel-label">Voto</div>
+          <input type="text" inputmode="decimal" autocomplete="off" class="vote-input" id="voteInput" maxlength="5" placeholder="0–10" />
+        </div>
+        <button type="button" class="vote-confirm-btn" id="voteConfirmBtn" title="Conferma voto">✓</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="postponed-modal-backdrop" id="postponedModalBackdrop">
+  <div class="postponed-modal-box" id="postponedModalBox">
+    <button class="postponed-modal-close" id="postponedModalClose">&times;</button>
+    <div class="postponed-modal-label">Rinviato</div>
+    <div class="postponed-modal-game" id="postponedModalGame"></div>
+    <div class="postponed-modal-date" id="postponedModalDate"></div>
   </div>
 </div>
 
@@ -671,11 +1217,11 @@ const MESI = [
     nome: "Febbraio",
     numero: "01",
     matches: [
-      { gameL: "Fable", postponedL: true, imgL: IMG_FABLE, playerL: "Metello",
-        gameR: "Resident Evil Requiem", imgR: IMG_RE_REQUIEM, imgRPos: "70% 35%", dataR: "27 febbraio 2026", winnerR: true, playerR: "Renkas", dashDarkR: true },
-      { gameL: "Pao Pao",  imgL: IMG_PAO_PAO, imgLPos: "0% 45%",  playerL: "Sirian",
-        gameR: "Reanimal", imgR: IMG_REANIMAL, imgRPos: "56% 50%", imgRScale: 1.15, dataR: "13 febbraio 2026", playerR: "Payload" },
-      { gameL: "Code Vein 2", imgL: IMG_CODE_VEIN_2, imgLPos: "68% 40%", imgModalL: IMG_CODE_VEIN_2_MODAL, imgModalLPos: "50% 30%", dataL: "30 gennaio 2026", playerL: "Sakrem",
+      { id: "feb-1", gameL: "Fable", postponedL: true, imgL: IMG_FABLE, playerL: "Metello",
+        gameR: "Resident Evil Requiem", imgR: IMG_RE_REQUIEM, imgRPos: "70% 35%", dataR: "27 febbraio 2026", winnerR: true, playerR: "Renkas", dashDarkR: true, sceltaG: "R" },
+      { id: "feb-2", gameL: "Pao Pao",  imgL: IMG_PAO_PAO, imgLPos: "0% 45%",  playerL: "Sirian",
+        gameR: "Reanimal", imgR: IMG_REANIMAL, imgRPos: "56% 50%", imgRScale: 1.15, dataR: "13 febbraio 2026", playerR: "Payload", sceltaG: "R" },
+      { id: "feb-3", gameL: "Code Vein 2", imgL: IMG_CODE_VEIN_2, imgLPos: "68% 40%", imgModalL: IMG_CODE_VEIN_2_MODAL, imgModalLPos: "50% 30%", dataL: "30 gennaio 2026", playerL: "Sakrem", sceltaG: "L",
         gameR: "Arknights: Endfield", imgR: IMG_ARKNIGHTS_ENDFIELD, imgRPos: "50% 50%", imgModalR: IMG_ARKNIGHTS_ENDFIELD_MODAL, imgModalRPos: "50% 35%", dataR: "22 gennaio 2026", playerR: "Rhaab" },
     ]
   },
@@ -683,11 +1229,11 @@ const MESI = [
     nome: "Marzo",
     numero: "02",
     matches: [
-      { gameL: "Lords of the Fallen 2", imgL: IMG_LORDS_FALLEN_2, imgLPos: "65% 45%", postponedL: true, playerL: "Sakrem",
+      { id: "mar-1", gameL: "Lords of the Fallen 2", imgL: IMG_LORDS_FALLEN_2, imgLPos: "65% 45%", postponedL: true, playerL: "Sakrem", sceltaG: "L",
         gameR: "Pax Autocratica", imgR: IMG_PAX_AUTOCRATICA, imgRPos: "74% 45%", imgModalR: IMG_PAX_AUTOCRATICA_MODAL, imgModalRPos: "60% 40%", playerR: "Sirian" },
-      { gameL: "Marvel's Wolverine", imgL: IMG_WOLVERINE_NEW, imgLPos: "50% 50%", imgModalL: IMG_WOLVERINE_MODAL, imgModalLPos: "50% 30%", playerL: "Metello",
-        gameR: "Monster Hunter Stories 3", imgR: IMG_MONSTER_HUNTER_STORIES_3, imgRPos: "50% 50%", dataR: "13 marzo 2026", playerR: "Rhaab" },
-      { gameL: "Cairn", imgL: IMG_CAIRN, imgLPos: "70% 35%", dataL: "29 gennaio 2026", playerL: "Payload",
+      { id: "mar-2", gameL: "Marvel's Wolverine", imgL: IMG_WOLVERINE_NEW, imgLPos: "50% 50%", imgModalL: IMG_WOLVERINE_MODAL, imgModalLPos: "50% 30%", playerL: "Metello",
+        gameR: "Monster Hunter Stories 3", imgR: IMG_MONSTER_HUNTER_STORIES_3, imgRPos: "50% 50%", dataR: "13 marzo 2026", playerR: "Rhaab", sceltaG: "R" },
+      { id: "mar-3", gameL: "Cairn", imgL: IMG_CAIRN, imgLPos: "70% 35%", dataL: "29 gennaio 2026", playerL: "Payload", sceltaG: "L",
         gameR: "007 First Light", imgR: IMG_SEVEN_FIRST_LIGHT, imgRPos: "76% 45%", dataR: "27 maggio 2026", playerR: "Renkas" },
     ]
   },
@@ -695,11 +1241,11 @@ const MESI = [
     nome: "Aprile",
     numero: "03",
     matches: [
-      { gameL: "Stonemachia", imgL: IMG_STONEMACHIA, imgLPos: "50% 50%", imgModalL: IMG_STONEMACHIA_MODAL, imgModalLPos: "50% 40%", dataL: "26 maggio 2026", playerL: "Sakrem",
+      { id: "apr-1", gameL: "Stonemachia", imgL: IMG_STONEMACHIA, imgLPos: "50% 50%", imgModalL: IMG_STONEMACHIA_MODAL, imgModalLPos: "50% 40%", dataL: "26 maggio 2026", playerL: "Sakrem", sceltaG: "L",
         gameR: "Planet of Lana 2", imgR: IMG_PLANET_LANA_2, imgRPos: "50% 50%", dataR: "5 marzo 2026", playerR: "Payload" },
-      { gameL: "Mario Tennis Fever", imgL: IMG_MARIO_TENNIS_FEVER, imgLPos: "50% 50%", imgModalL: IMG_MARIO_TENNIS_FEVER_MODAL, imgModalLPos: "50% 40%", dataL: "12 febbraio 2026", playerL: "Rhaab",
+      { id: "apr-2", gameL: "Mario Tennis Fever", imgL: IMG_MARIO_TENNIS_FEVER, imgLPos: "50% 50%", imgModalL: IMG_MARIO_TENNIS_FEVER_MODAL, imgModalLPos: "50% 40%", dataL: "12 febbraio 2026", playerL: "Rhaab",
         gameR: "Pokémon Champions", imgR: IMG_POKEMON_CHAMPIONS, imgRPos: "57% 50%", dataR: "8 aprile 2026", playerR: "Renkas" },
-      { gameL: "Subnautica 2", imgL: IMG_SUBNAUTICA_2_STRIP, imgLPos: "50% 50%", imgModalL: IMG_SUBNAUTICA_2_MODAL, imgModalLPos: "50% 40%", playerL: "Sirian",
+      { id: "apr-3", gameL: "Subnautica 2", imgL: IMG_SUBNAUTICA_2_STRIP, imgLPos: "50% 50%", imgModalL: IMG_SUBNAUTICA_2_MODAL, imgModalLPos: "50% 40%", playerL: "Sirian", sceltaG: "L",
         gameR: "FC 27", imgR: IMG_FC_27, imgRPos: "50% 50%", playerR: "Metello" },
     ]
   },
@@ -707,23 +1253,23 @@ const MESI = [
     nome: "Maggio",
     numero: "04",
     matches: [
-      { gameL: "Valor Mortis", imgL: IMG_VALOR_MORTIS_STRIP, imgLPos: "50% 15%", imgModalL: IMG_VALOR_MORTIS_MODAL, imgModalLPos: "50% 40%", playerL: "Sakrem",
+      { id: "mag-1", gameL: "Valor Mortis", imgL: IMG_VALOR_MORTIS_STRIP, imgLPos: "50% 15%", imgModalL: IMG_VALOR_MORTIS_MODAL, imgModalLPos: "50% 40%", playerL: "Sakrem", sceltaG: "L",
         gameR: "High on Life 2", imgR: IMG_HIGH_ON_LIFE_2, imgRPos: "75% 45%", imgModalR: IMG_HIGH_ON_LIFE_2_MODAL, imgModalRPos: "50% 40%", dataR: "13 febbraio 2026", playerR: "Renkas" },
-      { gameL: "Mouse: P.I. for Hire", imgL: IMG_MOUSE_PI_FOR_HIRE, imgLPos: "46% 50%", dataL: "16 aprile 2026", playerL: "Metello",
+      { id: "mag-2", gameL: "Mouse: P.I. for Hire", imgL: IMG_MOUSE_PI_FOR_HIRE, imgLPos: "46% 50%", dataL: "16 aprile 2026", playerL: "Metello", sceltaG: "L",
         gameR: "Halo Combat Evolved Remake", imgR: IMG_HALO_REMAKE, imgRPos: "60% 50%", playerR: "Payload" },
-      { gameL: "GTA 6", imgL: IMG_GTA6, imgLPos: "50% 50%", imgModalL: IMG_GTA6_MODAL, imgModalLPos: "50% 40%", playerL: "Sirian",
-        gameR: "Atomic Heart 2", imgR: IMG_ATOMIC_HEART_2, imgRPos: "50% 50%", playerR: "Rhaab" },
+      { id: "mag-3", gameL: "GTA 6", imgL: IMG_GTA6, imgLPos: "50% 50%", imgModalL: IMG_GTA6_MODAL, imgModalLPos: "50% 40%", playerL: "Sirian",
+        gameR: "Atomic Heart 2", imgR: IMG_ATOMIC_HEART_2, imgRPos: "50% 50%", playerR: "Rhaab", sceltaG: "R" },
     ]
   },
   {
     nome: "Giugno",
     numero: "05",
     matches: [
-      { gameL: "Marvel 1943", imgL: IMG_MARVEL_1943, imgLPos: "50% 50%", playerL: "Sirian",
-        gameR: "The Duskbloods", imgR: IMG_DUSKBLOODS_NEW, imgRPos: "40% 40%", imgModalR: IMG_DUSKBLOODS_MODAL, imgModalRPos: "50% 40%", playerR: "Renkas" },
-      { gameL: "Subliminal", imgL: IMG_SUBLIMINAL, imgLPos: "50% 50%", playerL: "Rhaab",
-        gameR: "Replaced", imgR: IMG_REPLACED, imgRPos: "70% 40%", dataR: "14 aprile 2026", playerR: "Payload" },
-      { gameL: "Dragon Quest VII: Reimagined", imgL: IMG_DRAGON_QUEST_7, imgLPos: "97% 45%", dataL: "5 febbraio 2026", playerL: "Metello",
+      { id: "giu-1", gameL: "Marvel 1943", imgL: IMG_MARVEL_1943, imgLPos: "50% 50%", playerL: "Sirian",
+        gameR: "The Duskbloods", imgR: IMG_DUSKBLOODS_NEW, imgRPos: "40% 40%", imgModalR: IMG_DUSKBLOODS_MODAL, imgModalRPos: "50% 40%", playerR: "Renkas", sceltaG: "R" },
+      { id: "giu-2", gameL: "Subliminal", imgL: IMG_SUBLIMINAL, imgLPos: "50% 50%", playerL: "Rhaab",
+        gameR: "Replaced", imgR: IMG_REPLACED, imgRPos: "70% 40%", dataR: "14 aprile 2026", playerR: "Payload", sceltaG: "R" },
+      { id: "giu-3", gameL: "Dragon Quest VII: Reimagined", imgL: IMG_DRAGON_QUEST_7, imgLPos: "97% 45%", dataL: "5 febbraio 2026", playerL: "Metello", sceltaG: "L",
         gameR: "Tides of Annihilation", imgR: IMG_TIDES_ANNIHILATION, imgRPos: "50% 50%", playerR: "Sakrem" },
     ]
   },
@@ -731,23 +1277,23 @@ const MESI = [
     nome: "Luglio",
     numero: "06",
     matches: [
-      { gameL: "Onimusha: Way of the Sword", imgL: IMG_ONIMUSHA, imgLPos: "50% 50%", playerL: "Renkas",
+      { id: "lug-1", gameL: "Onimusha: Way of the Sword", imgL: IMG_ONIMUSHA, imgLPos: "50% 50%", playerL: "Renkas", sceltaG: "L",
         gameR: "Phantom Blade Zero", imgR: IMG_PHANTOM_BLADE_ZERO, imgRPos: "50% 25%", playerR: "Metello" },
-      { gameL: "Slay the Spire 2", imgL: IMG_SLAY_THE_SPIRE_2, imgLPos: "45% 50%", playerL: "Payload",
-        gameR: "Pragmata", imgR: IMG_PRAGMATA, imgRPos: "50% 50%", dataR: "17 aprile 2026", playerR: "Sirian" },
-      { gameL: "Neverness To Everness", gameLUrl: "https://nte.perfectworld.com/intermed/mktkol/en/index.html", imgL: IMG_NTE, imgLPos: "0% 50%", imgModalL: IMG_NTE_MODAL, imgModalLPos: "50% 40%", dataL: "29 aprile 2026", playerL: "Rhaab",
-        gameR: "Mortal Shell 2", imgR: IMG_MORTAL_SHELL_2, imgRPos: "50% 50%", imgModalR: IMG_MORTAL_SHELL_2_MODAL, imgModalRPos: "50% 30%", playerR: "Sakrem" },
+      { id: "lug-2", gameL: "Slay the Spire 2", imgL: IMG_SLAY_THE_SPIRE_2, imgLPos: "45% 50%", playerL: "Payload",
+        gameR: "Pragmata", imgR: IMG_PRAGMATA, imgRPos: "50% 50%", dataR: "17 aprile 2026", playerR: "Sirian", sceltaG: "R" },
+      { id: "lug-3", gameL: "Neverness To Everness", gameLUrl: "https://nte.perfectworld.com/intermed/mktkol/en/index.html", imgL: IMG_NTE, imgLPos: "0% 50%", imgModalL: IMG_NTE_MODAL, imgModalLPos: "50% 40%", dataL: "29 aprile 2026", playerL: "Rhaab",
+        gameR: "Mortal Shell 2", imgR: IMG_MORTAL_SHELL_2, imgRPos: "50% 50%", imgModalR: IMG_MORTAL_SHELL_2_MODAL, imgModalRPos: "50% 30%", playerR: "Sakrem", sceltaG: "R" },
     ]
   },
   {
     nome: "Agosto",
     numero: "07",
     matches: [
-      { gameL: "Yakuza Kiwami", imgL: IMG_YAKUZA_KIWAMI, imgLPos: "72% 50%", imgModalL: IMG_YAKUZA_KIWAMI_MODAL, imgModalLPos: "50% 40%", playerL: "Sirian",
+      { id: "ago-1", gameL: "Yakuza Kiwami", imgL: IMG_YAKUZA_KIWAMI, imgLPos: "72% 50%", imgModalL: IMG_YAKUZA_KIWAMI_MODAL, imgModalLPos: "50% 40%", playerL: "Sirian", sceltaG: "L",
         gameR: "Crimson Desert", imgR: IMG_CRIMSON_DESERT, imgRPos: "50% 50%", dataR: "19 marzo 2026", playerR: "Sakrem" },
-      { gameL: "Mewgenics", imgL: IMG_MEWGENICS, imgLPos: "50% 50%", dataL: "10 febbraio 2026", playerL: "Rhaab",
+      { id: "ago-2", gameL: "Mewgenics", imgL: IMG_MEWGENICS, imgLPos: "50% 50%", dataL: "10 febbraio 2026", playerL: "Rhaab", sceltaG: "L",
         gameR: "Bloodstained: The Scarlet Engagement", imgR: IMG_BLOODSTAINED, imgRPos: "50% 50%", imgModalR: IMG_BLOODSTAINED_MODAL, imgModalRPos: "50% 40%", playerR: "Metello" },
-      { gameL: "Gears of War: E-Day", imgL: IMG_GEARS_OF_WAR_EDAY, imgLPos: "50% 50%", playerL: "Renkas",
+      { id: "ago-3", gameL: "Gears of War: E-Day", imgL: IMG_GEARS_OF_WAR_EDAY, imgLPos: "50% 50%", playerL: "Renkas", sceltaG: "L",
         gameR: "Ontos", imgR: IMG_ONTOS, imgRPos: "50% 50%", postponedR: true, playerR: "Payload" },
     ]
   },
@@ -780,9 +1326,15 @@ function gameTitleHTML(name, url){
 }
 
 function playerRowHTML(player, tagClass, isWinner, dashDark){
-  const nameEl = `<div class="player-name ${tagClass}${isWinner ? ' winner' : ''}${dashDark ? ' dash-dark' : ''}">${player}</div>`;
-  if(!isWinner) return nameEl;
-  return `<div class="player-winner-row">${nameEl}<div class="winner-line"><span class="winner-dot"></span>Vincitore</div></div>`;
+  // Il trattino vive DENTRO il riquadro del nome (posizionato fuori dal suo
+  // bordo con right:100%/left:100%), non e' piu un elemento di flusso: la
+  // sua comparsa/scomparsa non puo' quindi mai spostare nulla intorno a se.
+  const dashEl = `<span class="player-dash"></span>`;
+  const nameEl = `<div class="player-name ${tagClass}${isWinner ? ' winner' : ''}${dashDark ? ' dash-dark' : ''}">${dashEl}${player}</div>`;
+  const letters = 'Vincitore'.split('').map(ch => `<span class="wl-ch${isWinner ? ' shown' : ''}">${ch}</span>`).join('');
+  const lineEl = `<div class="winner-line"><span class="winner-dot"></span><span class="winner-label">${letters}</span></div>`;
+  const stages = isWinner ? ' stage-dot stage-line-outer stage-line-inner stage-badge' : '';
+  return `<div class="player-winner-row${stages}">${nameEl}${lineEl}</div>`;
 }
 
 function coverStyle(img, pos, scale){
@@ -790,6 +1342,95 @@ function coverStyle(img, pos, scale){
   const position = pos || 'center';
   const transform = scale ? ` transform:scale(${scale});` : '';
   return ` style="background-image:url('${img}'); background-position:${position};${transform}"`;
+}
+
+function buildMatchRow(m, matchesEl){
+      const row = document.createElement('div');
+      row.className = 'match';
+      row.dataset.matchId = m.id || '';
+      row.innerHTML = `
+        <div class="slot left">
+          <div class="cover"${coverStyle(m.imgL, m.imgLPos, m.imgLScale)}></div>
+          <div class="slot-content${m.postponedL ? ' has-postponed' : ''}">
+            ${m.postponedL ? '<span class="postponed-tag">rinviato</span>' : ''}
+            ${m.sceltaG === 'L' ? '<span class="choice-g-label">Scelta di G</span>' : ''}
+            <div class="game-title">${gameTitleHTML(m.gameLShort || m.gameL, m.gameLUrl)}</div>
+            ${playerRowHTML(m.playerL, 'left-tag', m.winnerL, m.dashDarkL)}
+          </div>
+        </div>
+        <div class="vs"><div class="vs-inner"></div></div>
+        <div class="slot right">
+          <div class="slot-content${m.postponedR ? ' has-postponed' : ''}">
+            ${m.postponedR ? '<span class="postponed-tag">rinviato</span>' : ''}
+            ${m.sceltaG === 'R' ? '<span class="choice-g-label">Scelta di G</span>' : ''}
+            <div class="game-title">${gameTitleHTML(m.gameRShort || m.gameR, m.gameRUrl)}</div>
+            ${playerRowHTML(m.playerR, 'right-tag', m.winnerR, m.dashDarkR)}
+          </div>
+          <div class="cover"${coverStyle(m.imgR, m.imgRPos, m.imgRScale)}></div>
+        </div>
+      `;
+      // Le striscette sono cliccabili (mouse e dito), tranne quelle rinviate.
+      const slotLeft = row.querySelector('.slot.left');
+      const slotRight = row.querySelector('.slot.right');
+
+      if(!m.postponedL){
+        slotLeft.classList.add('clickable');
+        slotLeft.addEventListener('click', (e) => {
+          if(slotLeft.dataset.suppressClick === '1'){ slotLeft.dataset.suppressClick = ''; return; }
+          if(e.target.closest('a')) return; // il link esterno (es. NTE) resta prioritario
+          if(e.target.closest('.admin-declare-btn')) return;
+          openGameModal(matchesEl, { titolo: m.gameL, giocatore: m.playerL, img: m.imgModalL || m.imgL, pos: m.imgModalLPos || m.imgLPos, data: m.dataL, match: m, side: 'L' });
+        });
+      } else {
+        const tagL = slotLeft.querySelector('.postponed-tag');
+        if(tagL) tagL.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openPostponedModal(m.gameL, m.postponedDateL);
+        });
+      }
+      if(!m.postponedR){
+        slotRight.classList.add('clickable');
+        slotRight.addEventListener('click', (e) => {
+          if(slotRight.dataset.suppressClick === '1'){ slotRight.dataset.suppressClick = ''; return; }
+          if(e.target.closest('a')) return;
+          if(e.target.closest('.admin-declare-btn')) return;
+          openGameModal(matchesEl, { titolo: m.gameR, giocatore: m.playerR, img: m.imgModalR || m.imgR, pos: m.imgModalRPos || m.imgRPos, data: m.dataR, match: m, side: 'R' });
+        });
+      } else {
+        const tagR = slotRight.querySelector('.postponed-tag');
+        if(tagR) tagR.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openPostponedModal(m.gameR, m.postponedDateR);
+        });
+      }
+
+      addAdminControls(row, m, slotLeft, slotRight);
+
+      return row;
+}
+
+const WINNER_RULES_HTML = `
+  <h4>Come si decreta un vincitore</h4>
+  <p><strong>Da mouse:</strong> passa il puntatore sul riquadro del videogioco. Comparirà il pulsante <span class="rule-btn-label">Dichiara vincitore</span>: cliccalo per assegnare la vittoria a quel giocatore.</p>
+  <p><strong>Da touch (telefono/tablet):</strong> tieni premuto il riquadro del videogioco per almeno 3 secondi. Un tocco più breve resta un tap normale e apre il popup del gioco.</p>
+  <h4>Correggere un errore</h4>
+  <p><strong>Cambiare vincitore:</strong> ripeti la stessa azione (clic o pressione lunga) sul videogioco dell'avversario. Il vecchio vincitore torna neutro, il nuovo prende il suo posto.</p>
+  <p><strong>Annullare del tutto:</strong> ripeti la stessa azione (clic o pressione lunga) sul videogioco già dichiarato vincitore. Il match torna in una situazione neutra.</p>
+`;
+
+/* I pannelli "info" (mesi e voto) si aprono con un max-width calcolato
+   sullo spazio REALE disponibile dal pulsante fino al bordo del
+   viewport, nella direzione in cui il pannello si espande. E' l'unico
+   modo per garantire che non sforino mai lo schermo, qualunque sia la
+   posizione del pulsante sulla pagina, la larghezza della finestra o
+   il dispositivo: un numero fisso in em o vw non puo' saperlo in anticipo. */
+function clampPanelWidth(panelEl, btnEl, growsLeft){
+  const btnRect = btnEl.getBoundingClientRect();
+  const margin = 24; // px di sicurezza dal bordo dello schermo
+  const space = growsLeft
+    ? (btnRect.right - margin)                      // il pannello si espande verso sinistra (right:0/1.5em)
+    : (window.innerWidth - btnRect.left - margin);   // si espande verso destra (left:1.5em)
+  panelEl.style.maxWidth = Math.max(space, 220) + 'px';
 }
 
 function renderMonth(mese){
@@ -803,69 +1444,32 @@ function renderMonth(mese){
     <span class="month-name">${mese.nome}</span>
     <span class="month-index">${mese.numero}</span>
     <span class="month-rule"></span>
+    <button type="button" class="month-info-btn" aria-label="Regole decretazione vincitore">i</button>
+    <div class="month-info-panel">${WINNER_RULES_HTML}</div>
   `;
   wrapper.appendChild(header);
+
+  const infoBtn = header.querySelector('.month-info-btn');
+  const infoPanel = header.querySelector('.month-info-panel');
+  infoPanel.addEventListener('click', (e) => e.stopPropagation());
+  infoBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const willOpen = !infoPanel.classList.contains('open');
+    document.querySelectorAll('.month-info-panel.open').forEach(p => p.classList.remove('open'));
+    document.querySelectorAll('.month-info-btn.open').forEach(b => b.classList.remove('open'));
+    if(willOpen){
+      clampPanelWidth(infoPanel, infoBtn, true);
+      infoPanel.classList.add('open');
+      infoBtn.classList.add('open');
+    }
+  });
 
   const matchesEl = document.createElement('div');
   matchesEl.className = 'matches';
 
   if(hasMatches){
     mese.matches.forEach(m => {
-      const row = document.createElement('div');
-      row.className = 'match';
-      row.innerHTML = `
-        <div class="slot left">
-          <div class="cover"${coverStyle(m.imgL, m.imgLPos, m.imgLScale)}></div>
-          <div class="slot-content${m.postponedL ? ' has-postponed' : ''}">
-            ${m.postponedL ? '<span class="postponed-tag">rinviato</span>' : ''}
-            <div class="game-title">${gameTitleHTML(m.gameL, m.gameLUrl)}</div>
-            ${playerRowHTML(m.playerL, 'left-tag', m.winnerL)}
-          </div>
-        </div>
-        <div class="vs"><div class="vs-inner"></div></div>
-        <div class="slot right">
-          <div class="slot-content${m.postponedR ? ' has-postponed' : ''}">
-            ${m.postponedR ? '<span class="postponed-tag">rinviato</span>' : ''}
-            <div class="game-title">${gameTitleHTML(m.gameR, m.gameRUrl)}</div>
-            ${playerRowHTML(m.playerR, 'right-tag', m.winnerR, m.dashDarkR)}
-          </div>
-          <div class="cover"${coverStyle(m.imgR, m.imgRPos, m.imgRScale)}></div>
-        </div>
-      `;
-      matchesEl.appendChild(row);
-
-      // La linea "vincitore" deve partire esattamente dal centro della targhetta:
-      // misuriamo la targhetta ora che è nel DOM e spostiamo la linea di conseguenza.
-      row.querySelectorAll('.player-winner-row').forEach(prow => {
-        const badge = prow.querySelector('.player-name.winner');
-        const line = prow.querySelector('.winner-line');
-        if(!badge || !line) return;
-        const halfWidth = badge.offsetWidth / 2;
-        if(prow.closest('.slot').classList.contains('right')){
-          line.style.marginRight = `-${halfWidth}px`;
-        } else {
-          line.style.marginLeft = `-${halfWidth}px`;
-        }
-      });
-
-      // Le striscette sono cliccabili (mouse e dito), tranne quelle rinviate.
-      const slotLeft = row.querySelector('.slot.left');
-      const slotRight = row.querySelector('.slot.right');
-
-      if(!m.postponedL){
-        slotLeft.classList.add('clickable');
-        slotLeft.addEventListener('click', (e) => {
-          if(e.target.closest('a')) return; // il link esterno (es. NTE) resta prioritario
-          openGameModal(matchesEl, { titolo: m.gameL, giocatore: m.playerL, img: m.imgModalL || m.imgL, pos: m.imgModalLPos || m.imgLPos, data: m.dataL });
-        });
-      }
-      if(!m.postponedR){
-        slotRight.classList.add('clickable');
-        slotRight.addEventListener('click', (e) => {
-          if(e.target.closest('a')) return;
-          openGameModal(matchesEl, { titolo: m.gameR, giocatore: m.playerR, img: m.imgModalR || m.imgR, pos: m.imgModalRPos || m.imgRPos, data: m.dataR });
-        });
-      }
+      matchesEl.appendChild(buildMatchRow(m, matchesEl));
     });
   } else {
     const tbd = document.createElement('div');
@@ -889,6 +1493,8 @@ const gameModalCoverImg = document.getElementById('gameModalCoverImg');
 const gameModalTitle = document.getElementById('gameModalTitle');
 const gameModalPlayer = document.getElementById('gameModalPlayer');
 const gameModalDate = document.getElementById('gameModalDate');
+const gameModalScore = document.getElementById('gameModalScore');
+const gameModalScoreValue = document.getElementById('gameModalScoreValue');
 const gameModalClose = document.getElementById('gameModalClose');
 
 // Varianti di layout per singoli banner che necessitano un posizionamento diverso
@@ -931,10 +1537,16 @@ const MODAL_LAYOUT_VARIANTS = {
   "Bloodstained: The Scarlet Engagement": "modal-variant-left",
 };
 
+let currentVoteMatch = null;
+let currentVoteSide = null;
+
 function openGameModal(matchesEl, info){
   const rect = matchesEl.getBoundingClientRect();
+  const downNudge = 14; // "un pochino piu in basso" rispetto all'area esatta
   gameModalBox.style.width = rect.width + 'px';
   gameModalBox.style.height = rect.height + 'px';
+  gameModalBox.style.left = rect.left + 'px';
+  gameModalBox.style.top = (rect.top + downNudge) + 'px';
   gameModalCoverImg.style.backgroundImage = info.img ? `url('${info.img}')` : 'none';
   gameModalCoverImg.style.backgroundPosition = info.pos || 'center';
   gameModalTitle.textContent = info.titolo || '';
@@ -943,11 +1555,61 @@ function openGameModal(matchesEl, info){
   gameModalBox.classList.remove('modal-variant-left', 'modal-variant-right');
   const variant = MODAL_LAYOUT_VARIANTS[info.titolo];
   if(variant) gameModalBox.classList.add(variant);
+
+  currentVoteMatch = info.match || null;
+  currentVoteSide = info.side || null;
+  const currentVoto = currentVoteMatch && currentVoteSide === 'L' ? currentVoteMatch.voteL
+                     : currentVoteMatch && currentVoteSide === 'R' ? currentVoteMatch.voteR
+                     : null;
+  gameModalScoreValue.textContent = currentVoto || '';
+  gameModalScore.classList.toggle('visible', !!currentVoto);
+  closeVotePanel();
+
   gameModalBackdrop.classList.add('open');
+  layoutGameModalExtras();
 }
 
 function closeGameModal(){
   gameModalBackdrop.classList.remove('open');
+  closeVotePanel();
+  voteInfoPanel.classList.remove('open');
+  voteInfoBtn.classList.remove('open');
+}
+
+/* Posiziona la casella voto e i due pulsanti (voto/info) misurando il
+   rendering REALE di data e titolo, invece di indovinare uno scarto fisso
+   in em: titolo e data cambiano altezza da gioco a gioco (un titolo lungo
+   va su due righe, un nome giocatore lungo allarga la targhetta), quindi
+   solo una misura dal vivo, rifatta ad ogni apertura, resta precisa su
+   qualunque contenuto e qualunque schermo. */
+function layoutGameModalExtras(){
+  requestAnimationFrame(() => {
+    const boxRect = gameModalBox.getBoundingClientRect();
+    const dateRect = gameModalDate.getBoundingClientRect();
+    const titleRect = gameModalTitle.getBoundingClientRect();
+    const gapPx = 10;
+
+    // Casella voto: riempie quasi tutto lo spazio tra la data e il titolo.
+    const scoreTop = (dateRect.bottom - boxRect.top) + gapPx;
+    const scoreBottom = (boxRect.bottom - titleRect.top) + gapPx;
+    gameModalScore.style.top = scoreTop + 'px';
+    gameModalScore.style.bottom = scoreBottom + 'px';
+
+    // Pulsante info: il suo centro combacia col punto piu basso del titolo.
+    const infoH = voteInfoBtn.offsetHeight;
+    const infoBottom = (boxRect.bottom - titleRect.bottom) - (infoH / 2);
+    voteInfoBtn.style.bottom = infoBottom + 'px';
+
+    // Pulsante voto: impilato sopra quello info, con uno spazio tra i due
+    // pari a un intero pallino (come se ce ne stesse un terzo in mezzo).
+    const btnGap = infoH;
+    const triggerBottom = infoBottom + infoH + btnGap;
+    voteTriggerBtn.style.bottom = triggerBottom + 'px';
+
+    // Il pannello regole si apre sopra entrambi i pulsanti.
+    const triggerH = voteTriggerBtn.offsetHeight;
+    voteInfoPanel.style.bottom = (triggerBottom + triggerH + gapPx) + 'px';
+  });
 }
 
 gameModalClose.addEventListener('click', closeGameModal);
@@ -958,86 +1620,560 @@ window.addEventListener('keydown', (e) => {
   if(e.key === 'Escape') closeGameModal();
 });
 
+/* ---------- VOTAZIONE ----------
+   Stesso principio della decretazione vincitore: si scrive nello stato
+   in memoria del match, si salva nel medesimo winners.json (in locale
+   per ora, via localStorage, in attesa del Worker), e la vista si
+   aggiorna subito. Il voto va da 0 a 10, al massimo 2 cifre decimali;
+   se la parte intera arriva a 10 non e' piu' possibile aggiungere una
+   virgola (10,1 o 10,12 non devono poter esistere). */
+const voteTriggerBtn = document.getElementById('voteTriggerBtn');
+const votePanelOverlay = document.getElementById('votePanelOverlay');
+const voteInput = document.getElementById('voteInput');
+const voteConfirmBtn = document.getElementById('voteConfirmBtn');
+const voteInfoBtn = document.getElementById('voteInfoBtn');
+const voteInfoPanel = document.getElementById('voteInfoPanel');
+const VOTE_PATTERN = /^(10|[0-9](,[0-9]{1,2})?)$/;
+
+const VOTE_RULES_HTML = `
+  <h4>Come si vota</h4>
+  <p>Premi il pulsante <span class="rule-btn-label">★</span> per aprire il pannello di voto.</p>
+  <p>Inserisci un numero da 0 a 10, anche con la virgola (massimo 2 cifre decimali, es. 8,75).</p>
+  <p>Premi il pulsante verde <span class="rule-btn-label">✓</span> per confermare: il voto compare subito nell'apposito spazio del banner, salvato in modo permanente.</p>
+  <p><strong>Cambiare voto:</strong> riapri il pannello con <span class="rule-btn-label">★</span> e conferma un nuovo numero: sostituisce quello precedente.</p>
+  <p><strong>Cancellare il voto:</strong> riapri il pannello, scrivi <span class="rule-btn-label">-</span> al posto del numero e conferma: il riquadro del voto torna invisibile.</p>
+`;
+voteInfoPanel.innerHTML = VOTE_RULES_HTML;
+
+voteInfoPanel.addEventListener('click', (e) => e.stopPropagation());
+voteInfoBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  closeVotePanel();
+  const willOpen = !voteInfoPanel.classList.contains('open');
+  if(willOpen){
+    const growsLeft = !gameModalBox.classList.contains('modal-variant-right');
+    clampPanelWidth(voteInfoPanel, voteInfoBtn, growsLeft);
+  }
+  voteInfoPanel.classList.toggle('open', willOpen);
+  voteInfoBtn.classList.toggle('open', willOpen);
+});
+document.addEventListener('click', () => {
+  voteInfoPanel.classList.remove('open');
+  voteInfoBtn.classList.remove('open');
+});
+window.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){
+    voteInfoPanel.classList.remove('open');
+    voteInfoBtn.classList.remove('open');
+  }
+});
+
+function sanitizeVoteInput(raw){
+  let v = raw || '';
+  // Il trattino cancella il voto: se e' l'unico carattere digitato, va bene cosi'.
+  if(v.trim() === '-') return '-';
+
+  v = v.replace(/[^0-9,]/g, '');
+  const firstComma = v.indexOf(',');
+  if(firstComma !== -1){
+    v = v.slice(0, firstComma + 1) + v.slice(firstComma + 1).replace(/,/g, '');
+  }
+  const commaIdx = v.indexOf(',');
+  let intPart = (commaIdx === -1 ? v : v.slice(0, commaIdx)).slice(0, 2);
+  let decPart = commaIdx === -1 ? undefined : v.slice(commaIdx + 1).slice(0, 2);
+
+  const intNum = intPart === '' ? -1 : parseInt(intPart, 10);
+  if(intNum >= 10) return '10'; // il massimo e' 10 secco, niente decimali oltre
+
+  return decPart !== undefined ? intPart + ',' + decPart : intPart;
+}
+
+function openVotePanel(){
+  if(!currentVoteMatch || !currentVoteSide) return;
+  voteInfoPanel.classList.remove('open');
+  voteInfoBtn.classList.remove('open');
+  const existing = currentVoteSide === 'L' ? currentVoteMatch.voteL : currentVoteMatch.voteR;
+  voteInput.value = existing || '';
+  votePanelOverlay.classList.add('open');
+  voteInput.focus();
+}
+function closeVotePanel(){
+  votePanelOverlay.classList.remove('open');
+}
+
+voteTriggerBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  openVotePanel();
+});
+votePanelOverlay.addEventListener('click', (e) => {
+  if(e.target === votePanelOverlay) closeVotePanel();
+});
+voteInput.addEventListener('input', () => {
+  voteInput.value = sanitizeVoteInput(voteInput.value);
+});
+voteInput.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') voteConfirmBtn.click();
+});
+
+voteConfirmBtn.addEventListener('click', () => {
+  if(isRateLimited()){
+    showAdminToast('Limite di 50 interazioni/ora raggiunto: riprova più tardi, si resetta da solo.');
+    return;
+  }
+
+  const val = voteInput.value;
+  if(!currentVoteMatch || !currentVoteSide) return;
+
+  if(val === '-'){
+    // Il trattino cancella il voto: il riquadro torna invisibile.
+    if(currentVoteSide === 'L') currentVoteMatch.voteL = null;
+    else currentVoteMatch.voteR = null;
+
+    const entry = getMatchStateEntry(currentVoteMatch.id);
+    entry.votes[currentVoteSide] = null;
+    persistMatchState(currentVoteMatch.id, `Voto rimosso (${currentVoteMatch.id}-${currentVoteSide}).`);
+    registerInteraction();
+
+    gameModalScoreValue.textContent = '';
+    gameModalScore.classList.remove('visible');
+    closeVotePanel();
+    return;
+  }
+
+  if(!VOTE_PATTERN.test(val)){
+    showAdminToast('Inserisci un voto valido, da 0 a 10 (massimo 2 decimali), oppure "-" per cancellare.');
+    return;
+  }
+
+  if(currentVoteSide === 'L') currentVoteMatch.voteL = val;
+  else currentVoteMatch.voteR = val;
+
+  const entry = getMatchStateEntry(currentVoteMatch.id);
+  entry.votes[currentVoteSide] = val;
+  persistMatchState(currentVoteMatch.id, `Voto salvato in locale (${currentVoteMatch.id}-${currentVoteSide}). Sincronizzazione remota non ancora collegata.`);
+  registerInteraction();
+
+  gameModalScoreValue.textContent = val;
+  gameModalScore.classList.add('visible');
+  closeVotePanel();
+});
+
+
+/* ============================================================
+   POPUP RINVIO: mostra la data prevista del rinvio se nota,
+   altrimenti un simpatico "BHO" quando non abbiamo informazioni.
+   ============================================================ */
+const postponedModalBackdrop = document.getElementById('postponedModalBackdrop');
+const postponedModalGame = document.getElementById('postponedModalGame');
+const postponedModalDate = document.getElementById('postponedModalDate');
+const postponedModalClose = document.getElementById('postponedModalClose');
+
+function openPostponedModal(game, dateStr){
+  postponedModalGame.textContent = game || '';
+  postponedModalDate.textContent = dateStr && dateStr.trim() ? dateStr : 'Data da definirsi';
+  postponedModalBackdrop.classList.add('open');
+}
+function closePostponedModal(){
+  postponedModalBackdrop.classList.remove('open');
+}
+postponedModalClose.addEventListener('click', closePostponedModal);
+postponedModalBackdrop.addEventListener('click', (e) => {
+  if(e.target === postponedModalBackdrop) closePostponedModal();
+});
+window.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape') closePostponedModal();
+});
+
+/* ============================================================
+   DECRETAZIONE VINCITORE INTERATTIVA
+   ------------------------------------------------------------
+   I dati dei match (giochi, immagini, giocatori) restano
+   incorporati in questo HTML come sempre. Solo lo STATO dei
+   vincitori vive in un file separato, winners.json, cosi che
+   dichiarare un vincitore significhi scrivere poche righe in
+   un file piccolo e semplice, non riscrivere l'HTML intero.
+
+   Flusso attuale (fase di test):
+   1. Al caricamento, proviamo a leggere winners.json (funziona
+      solo se la pagina e servita via http/https, es. GitHub
+      Pages; se apri il file in locale con doppio click il
+      fetch fallisce per restrizioni del browser e si resta
+      sui dati incorporati nell'HTML, senza errori visibili).
+   2. In piu, per le prove locali, teniamo un "brogliaccio" in
+      localStorage: le dichiarazioni fatte durante i test
+      restano visibili ricaricando la pagina sullo stesso
+      dispositivo, anche senza salvataggio remoto vero.
+   3. Quando sara pronto il Worker con il token GitHub, la
+      funzione syncWinner() fara una vera chiamata di rete che
+      scrive su winners.json nel repository, al posto del solo
+      salvataggio locale.
+   ============================================================ */
+
+/* ============================================================
+   LIMITE INTERAZIONI ORARIO
+   ------------------------------------------------------------
+   GitHub concede 60 richieste/ora per IP senza token, 5000/ora con
+   token autenticato. Il Worker col token non e' ancora collegato (per
+   ora tutto resta in locale), ma prepariamo comunque la difesa: appena
+   parte la PRIMA interazione (voto o dichiarazione vincitore) si apre
+   una finestra di 61 minuti (60 + 1 di margine di sicurezza); se dentro
+   quella finestra le interazioni arrivano a 50, i pulsanti di entrambe
+   le funzioni si disattivano fino allo scadere della finestra stessa,
+   quando si resetta da sola. ============================================================ */
+const RATE_LIMIT_MAX = 50;
+const RATE_LIMIT_WINDOW_MS = 61 * 60 * 1000;
+const RATE_LIMIT_KEY = 'rate_limit_state';
+let rateLimitResetTimer = null;
+
+function getRateLimitState(){
+  let state = null;
+  try{ state = JSON.parse(localStorage.getItem(RATE_LIMIT_KEY) || 'null'); }catch(e){ state = null; }
+  const now = Date.now();
+  if(!state || typeof state.windowStart !== 'number' || (now - state.windowStart) >= RATE_LIMIT_WINDOW_MS){
+    state = { windowStart: now, count: 0 };
+  }
+  return state;
+}
+
+function saveRateLimitState(state){
+  try{ localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+function isRateLimited(){
+  return getRateLimitState().count >= RATE_LIMIT_MAX;
+}
+
+function msUntilRateLimitReset(){
+  const state = getRateLimitState();
+  return Math.max(0, RATE_LIMIT_WINDOW_MS - (Date.now() - state.windowStart));
+}
+
+function registerInteraction(){
+  const state = getRateLimitState();
+  state.count += 1;
+  saveRateLimitState(state);
+  updateRateLimitUI();
+}
+
+function updateRateLimitUI(){
+  const limited = isRateLimited();
+  document.body.classList.toggle('rate-limited', limited);
+  clearTimeout(rateLimitResetTimer);
+  if(limited){
+    rateLimitResetTimer = setTimeout(updateRateLimitUI, msUntilRateLimitReset() + 500);
+  }
+}
+
+const winnersState = {};
+
+async function loadWinners(){
+  let remote = null;
+  try{
+    const res = await fetch('winners.json', { cache: 'no-store' });
+    if(res.ok) remote = await res.json();
+  }catch(e){
+    console.warn('winners.json non raggiungibile (probabile apertura locale via file://): uso solo i dati incorporati nell\'HTML.', e);
+  }
+  let draft = {};
+  try{ draft = JSON.parse(localStorage.getItem('winners_draft') || '{}'); }catch(e){}
+  return Object.assign({}, remote || {}, draft);
+}
+
+function applyWinners(winners){
+  Object.keys(winners).forEach(id => { winnersState[id] = winners[id]; });
+  MESI.forEach(mese => {
+    (mese.matches || []).forEach(m => {
+      const w = winners[m.id];
+      if(!w) return;
+      m.winnerL = w.winner === 'L';
+      m.winnerR = w.winner === 'R';
+      if(w.votes){
+        if(w.votes.L) m.voteL = w.votes.L;
+        if(w.votes.R) m.voteR = w.votes.R;
+      }
+    });
+  });
+}
+
+/* Stato unico per match: { winner: 'L'|'R'|null, votes: { L: '7,5', R: null } }.
+   Vincitore e voti vivono nella stessa voce e nello stesso file (winners.json),
+   cosi' il voto "funziona come" la scelta del vincitore: stesso meccanismo
+   di salvataggio in locale in attesa del Worker. */
+function getMatchStateEntry(matchId){
+  if(!winnersState[matchId]) winnersState[matchId] = { winner: null, votes: {} };
+  if(!winnersState[matchId].votes) winnersState[matchId].votes = {};
+  return winnersState[matchId];
+}
+
+function persistMatchState(matchId, toastText){
+  const entry = winnersState[matchId];
+  const isEmpty = !entry || (!entry.winner && (!entry.votes || (!entry.votes.L && !entry.votes.R)));
+  try{
+    const local = JSON.parse(localStorage.getItem('winners_draft') || '{}');
+    if(isEmpty){ delete local[matchId]; } else { local[matchId] = entry; }
+    localStorage.setItem('winners_draft', JSON.stringify(local));
+  }catch(e){}
+
+  // TODO: quando il Worker (Cloudflare/Netlify) con il token GitHub sara pronto,
+  // sostituire/affiancare questo salvataggio locale con una chiamata reale, tipo:
+  // fetch('https://<url-del-worker>', { method: 'POST', body: JSON.stringify({ matchId, ...entry }) });
+
+  showAdminToast(toastText);
+}
+
+/* Da mouse: il pulsante compare al passaggio del mouse sul riquadro
+   giocatore (vedi CSS ".slot-content:hover .admin-declare-btn").
+   Da touch: si tiene premuto il riquadro per 3 secondi; un tocco piu
+   breve resta un tap normale e apre il popup del gioco. */
+function addAdminControls(row, m, slotLeft, slotRight){
+  const makeBtn = (side) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'admin-declare-btn';
+    btn.textContent = 'Dichiara vincitore';
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      declareWinner(m, side, row);
+    });
+    return btn;
+  };
+  if(!m.postponedL){
+    row.querySelector('.slot.left .slot-content').appendChild(makeBtn('L'));
+    attachLongPress(slotLeft, () => declareWinner(m, 'L', row));
+  }
+  if(!m.postponedR){
+    row.querySelector('.slot.right .slot-content').appendChild(makeBtn('R'));
+    attachLongPress(slotRight, () => declareWinner(m, 'R', row));
+  }
+}
+
+const LONG_PRESS_MS = 3000;
+function attachLongPress(slotEl, onLongPress){
+  let timer = null;
+  slotEl.addEventListener('touchstart', (e) => {
+    if(e.target.closest('.admin-declare-btn') || e.target.closest('.postponed-tag') || e.target.closest('a')) return;
+    slotEl.dataset.suppressClick = '';
+    timer = setTimeout(() => {
+      slotEl.dataset.suppressClick = '1';
+      onLongPress();
+      if(navigator.vibrate) navigator.vibrate(35); // piccolo riscontro tattile, se il dispositivo lo supporta
+    }, LONG_PRESS_MS);
+  }, { passive: true });
+  const cancelTimer = () => clearTimeout(timer);
+  slotEl.addEventListener('touchend', cancelTimer);
+  slotEl.addEventListener('touchmove', cancelTimer);
+  slotEl.addEventListener('touchcancel', cancelTimer);
+}
+
+/* Tempi delle 4 tappe principali (ms), somma 1500ms (1.5s), COME
+   richiesto ora riguardano solo pallino/riga/riquadro, non la scritta.
+   Ordine avanti: pallino -> meta esterna -> meta interna -> riquadro+trattino.
+   Al contrario e' l'esatto opposto: riquadro+trattino -> meta interna -> meta esterna -> pallino. */
+const WINNER_STAGE_MS = { dot: 200, lineOuter: 450, lineInner: 450, badge: 150 };
+
+// La scritta "Vincitore" ha una sua animazione a parte, un secondo netto,
+// lettera per lettera: dalla V alla E in avanti, dalla E alla V al contrario
+// (cioe' si toglie sempre l'ultima lettera comparsa, esatto opposto).
+const LABEL_MS = 1000;
+
+function clearRowAnimTimers(row){
+  if(row._winnerTimers){ row._winnerTimers.forEach(id => clearTimeout(id)); }
+  row._winnerTimers = [];
+}
+
+function playWinnerForward(row){
+  if(!row) return;
+  clearRowAnimTimers(row);
+  const timers = [];
+  const cls = row.classList;
+  cls.add('stage-dot');
+  let t = WINNER_STAGE_MS.dot;
+  timers.push(setTimeout(() => cls.add('stage-line-outer'), t)); t += WINNER_STAGE_MS.lineOuter;
+  timers.push(setTimeout(() => cls.add('stage-line-inner'), t)); t += WINNER_STAGE_MS.lineInner;
+  timers.push(setTimeout(() => cls.add('stage-badge'), t)); t += WINNER_STAGE_MS.badge;
+
+  // Solo ora (riquadro completato) parte la scritta, lettera per lettera.
+  const letters = Array.from(row.querySelectorAll('.wl-ch'));
+  const step = letters.length ? LABEL_MS / letters.length : 0;
+  letters.forEach((el, i) => {
+    timers.push(setTimeout(() => el.classList.add('shown'), t + i * step));
+  });
+
+  row._winnerTimers = timers;
+}
+
+function playWinnerReverse(row){
+  if(!row) return;
+  clearRowAnimTimers(row);
+  const timers = [];
+  const cls = row.classList;
+
+  // Prima la scritta si toglie lettera per lettera, dall'ultima (E) alla prima (V).
+  const letters = Array.from(row.querySelectorAll('.wl-ch'));
+  const step = letters.length ? LABEL_MS / letters.length : 0;
+  for(let i = letters.length - 1, k = 0; i >= 0; i--, k++){
+    timers.push(setTimeout(() => letters[i].classList.remove('shown'), k * step));
+  }
+
+  let t = LABEL_MS;
+  timers.push(setTimeout(() => cls.remove('stage-badge'), t)); t += WINNER_STAGE_MS.badge;
+  timers.push(setTimeout(() => cls.remove('stage-line-inner'), t)); t += WINNER_STAGE_MS.lineInner;
+  timers.push(setTimeout(() => cls.remove('stage-line-outer'), t)); t += WINNER_STAGE_MS.lineOuter;
+  timers.push(setTimeout(() => cls.remove('stage-dot'), t));
+  row._winnerTimers = timers;
+}
+
+/* Decreta (o annulla, o cambia) il vincitore. La riga non viene mai
+   ricostruita (fase A): accendiamo/spegniamo le classi di tappa sulla
+   riga giusta, una alla volta, con setTimeout. Se si cambia vincitore,
+   la vecchia riga gioca la sequenza al contrario mentre la nuova gioca
+   quella in avanti, nello stesso istante. */
+function declareWinner(m, side, row){
+  if(isRateLimited()){
+    showAdminToast('Limite di 50 interazioni/ora raggiunto: riprova più tardi, si resetta da solo.');
+    return;
+  }
+
+  const wasWinnerSide = m.winnerL ? 'L' : (m.winnerR ? 'R' : null);
+  const isUndo = wasWinnerSide === side;
+
+  const rowL = row.querySelector('.slot.left .player-winner-row');
+  const rowR = row.querySelector('.slot.right .player-winner-row');
+  const entry = getMatchStateEntry(m.id);
+
+  if(isUndo){
+    m.winnerL = false; m.winnerR = false;
+    entry.winner = null;
+    playWinnerReverse(side === 'L' ? rowL : rowR);
+  } else {
+    m.winnerL = (side === 'L');
+    m.winnerR = (side === 'R');
+    entry.winner = side;
+    const oldRow = wasWinnerSide === 'L' ? rowL : (wasWinnerSide === 'R' ? rowR : null);
+    if(oldRow) playWinnerReverse(oldRow);
+    playWinnerForward(side === 'L' ? rowL : rowR);
+  }
+
+  persistMatchState(m.id, isUndo
+    ? `Decretazione annullata (${m.id}).`
+    : `Vincitore salvato in locale (${m.id}). Sincronizzazione remota non ancora collegata.`);
+  registerInteraction();
+}
+
+let adminToastTimer = null;
+function showAdminToast(text){
+  let toast = document.getElementById('adminToast');
+  if(!toast){
+    toast = document.createElement('div');
+    toast.id = 'adminToast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = text;
+  toast.classList.add('show');
+  clearTimeout(adminToastTimer);
+  adminToastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.month-info-panel.open').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.month-info-btn.open').forEach(b => b.classList.remove('open'));
+});
+window.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){
+    document.querySelectorAll('.month-info-panel.open').forEach(p => p.classList.remove('open'));
+    document.querySelectorAll('.month-info-btn.open').forEach(b => b.classList.remove('open'));
+  }
+});
+
 const timeline = document.getElementById('timeline');
-MESI.forEach(m => timeline.appendChild(renderMonth(m)));
+
+(async function init(){
+  const winners = await loadWinners();
+  applyWinners(winners);
+  MESI.forEach(m => timeline.appendChild(renderMonth(m)));
+  setupSnapScrollNav(); // i mesi ora esistono davvero nel DOM: solo ora ha senso cercarli
+  updateRateLimitUI();
+})();
 
 /* ============================================================
    NAVIGAZIONE A SCATTI: rotella e frecce direzionali passano
    da un mese al successivo/precedente invece di scorrere in
    continuo, come una sequenza di slide verticali.
    ============================================================ */
-const monthEls = Array.from(document.querySelectorAll('.month'));
-let currentMonthIndex = 0;
-let navLocked = false;
+function setupSnapScrollNav(){
+  const monthEls = Array.from(document.querySelectorAll('.month'));
+  let currentMonthIndex = 0;
+  let navLocked = false;
 
-/* Lo scatto verso ogni mese deve fermarsi alla STESSA distanza dal
-   bordo superiore che ha Febbraio al caricamento (dovuta all'header
-   sopra di lui). Misuriamo quella distanza reale e la applichiamo
-   come scroll-margin-top a tutti i mesi: da quel punto in poi è il
-   browser stesso a fermare lo scroll nel punto giusto, in modo
-   nativo, qualunque sia la larghezza dello schermo. */
-function syncMonthScrollOffset(){
-  if(!monthEls.length) return;
-  const offset = Math.round(monthEls[0].getBoundingClientRect().top + window.scrollY);
-  monthEls.forEach(el => { el.style.scrollMarginTop = offset + 'px'; });
-  return offset;
-}
-let monthScrollOffset = syncMonthScrollOffset();
-window.addEventListener('resize', () => { monthScrollOffset = syncMonthScrollOffset(); });
-window.addEventListener('load', () => { monthScrollOffset = syncMonthScrollOffset(); });
-// I font web (Anton/Space Grotesk) possono cambiare di qualche pixel
-// l'altezza della testata una volta caricati: ricalcoliamo l'offset
-// a caricamento avvenuto, così su ogni dispositivo la misura resta
-// sempre quella reale e identica, indipendentemente da quanto ci
-// mettono i font a comparire.
-if(document.fonts && document.fonts.ready){
-  document.fonts.ready.then(() => { monthScrollOffset = syncMonthScrollOffset(); });
-}
-
-function updateCurrentIndexFromScroll(){
-  let closest = 0;
-  let closestDist = Infinity;
-  monthEls.forEach((el, i) => {
-    const dist = Math.abs(el.getBoundingClientRect().top - (monthScrollOffset || 0));
-    if(dist < closestDist){ closestDist = dist; closest = i; }
-  });
-  currentMonthIndex = closest;
-}
-
-function goToMonth(index){
-  index = Math.max(0, Math.min(monthEls.length - 1, index));
-  currentMonthIndex = index;
-  monthEls[index].scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function lockNav(){
-  navLocked = true;
-  setTimeout(() => { navLocked = false; }, 650);
-}
-
-window.addEventListener('wheel', (e) => {
-  e.preventDefault();
-  if(navLocked) return;
-  updateCurrentIndexFromScroll();
-  if(e.deltaY > 0){
-    goToMonth(currentMonthIndex + 1);
-  } else if(e.deltaY < 0){
-    goToMonth(currentMonthIndex - 1);
+  /* Lo scatto verso ogni mese deve fermarsi alla STESSA distanza dal
+     bordo superiore che ha Febbraio al caricamento (dovuta all'header
+     sopra di lui). Misuriamo quella distanza reale e la applichiamo
+     come scroll-margin-top a tutti i mesi: da quel punto in poi è il
+     browser stesso a fermare lo scroll nel punto giusto, in modo
+     nativo, qualunque sia la larghezza dello schermo. */
+  function syncMonthScrollOffset(){
+    if(!monthEls.length) return;
+    const offset = Math.round(monthEls[0].getBoundingClientRect().top + window.scrollY);
+    monthEls.forEach(el => { el.style.scrollMarginTop = offset + 'px'; });
+    return offset;
   }
-  lockNav();
-}, { passive: false });
+  let monthScrollOffset = syncMonthScrollOffset();
+  window.addEventListener('resize', () => { monthScrollOffset = syncMonthScrollOffset(); });
+  window.addEventListener('load', () => { monthScrollOffset = syncMonthScrollOffset(); });
+  // I font web (Anton/Space Grotesk) possono cambiare di qualche pixel
+  // l'altezza della testata una volta caricati: ricalcoliamo l'offset
+  // a caricamento avvenuto, così su ogni dispositivo la misura resta
+  // sempre quella reale e identica, indipendentemente da quanto ci
+  // mettono i font a comparire.
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(() => { monthScrollOffset = syncMonthScrollOffset(); });
+  }
 
-window.addEventListener('keydown', (e) => {
-  const nextKeys = ['ArrowDown', 'ArrowRight', 'PageDown'];
-  const prevKeys = ['ArrowUp', 'ArrowLeft', 'PageUp'];
-  if(nextKeys.includes(e.key) || prevKeys.includes(e.key)){
+  function updateCurrentIndexFromScroll(){
+    let closest = 0;
+    let closestDist = Infinity;
+    monthEls.forEach((el, i) => {
+      const dist = Math.abs(el.getBoundingClientRect().top - (monthScrollOffset || 0));
+      if(dist < closestDist){ closestDist = dist; closest = i; }
+    });
+    currentMonthIndex = closest;
+  }
+
+  function goToMonth(index){
+    index = Math.max(0, Math.min(monthEls.length - 1, index));
+    currentMonthIndex = index;
+    monthEls[index].scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function lockNav(){
+    navLocked = true;
+    setTimeout(() => { navLocked = false; }, 650);
+  }
+
+  window.addEventListener('wheel', (e) => {
     e.preventDefault();
     if(navLocked) return;
     updateCurrentIndexFromScroll();
-    goToMonth(currentMonthIndex + (nextKeys.includes(e.key) ? 1 : -1));
+    if(e.deltaY > 0){
+      goToMonth(currentMonthIndex + 1);
+    } else if(e.deltaY < 0){
+      goToMonth(currentMonthIndex - 1);
+    }
     lockNav();
-  }
-});
+  }, { passive: false });
+
+  window.addEventListener('keydown', (e) => {
+    const nextKeys = ['ArrowDown', 'ArrowRight', 'PageDown'];
+    const prevKeys = ['ArrowUp', 'ArrowLeft', 'PageUp'];
+    if(nextKeys.includes(e.key) || prevKeys.includes(e.key)){
+      e.preventDefault();
+      if(navLocked) return;
+      updateCurrentIndexFromScroll();
+      goToMonth(currentMonthIndex + (nextKeys.includes(e.key) ? 1 : -1));
+      lockNav();
+    }
+  });
+}
 
 
 
