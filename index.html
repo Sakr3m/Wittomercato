@@ -80,10 +80,6 @@
     filter: drop-shadow(0.1875em 0.1875em 0 rgba(0,0,0,0.55)) drop-shadow(0.375em 0.375em 0 rgba(255,61,84,0.18));
   }
 
-  header{
-    text-align:center;
-  }
-
   /* ---------- TIMELINE / MONTHS ---------- */
   .timeline{
     max-width: 58.5em;
@@ -1748,7 +1744,7 @@ voteInput.addEventListener('keydown', (e) => {
 
 voteConfirmBtn.addEventListener('click', () => {
   if(isRateLimited()){
-    showAdminToast('Limite di 50 interazioni/ora raggiunto: riprova più tardi, si resetta da solo.');
+    showAdminToast('Limite di 500 interazioni/ora raggiunto: riprova più tardi, si resetta da solo.');
     return;
   }
 
@@ -1851,7 +1847,7 @@ window.addEventListener('keydown', (e) => {
    quella finestra le interazioni arrivano a 50, i pulsanti di entrambe
    le funzioni si disattivano fino allo scadere della finestra stessa,
    quando si resetta da sola. ============================================================ */
-const RATE_LIMIT_MAX = 50;
+const RATE_LIMIT_MAX = 500;
 const RATE_LIMIT_WINDOW_MS = 61 * 60 * 1000;
 const RATE_LIMIT_KEY = 'rate_limit_state';
 let rateLimitResetTimer = null;
@@ -2076,7 +2072,7 @@ function playWinnerReverse(row){
    quella in avanti, nello stesso istante. */
 function declareWinner(m, side, row){
   if(isRateLimited()){
-    showAdminToast('Limite di 50 interazioni/ora raggiunto: riprova più tardi, si resetta da solo.');
+    showAdminToast('Limite di 500 interazioni/ora raggiunto: riprova più tardi, si resetta da solo.');
     return;
   }
 
