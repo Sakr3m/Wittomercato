@@ -145,9 +145,9 @@
     transition: background 0.2s ease, color 0.2s ease;
   }
   .is-android .month-info-btn{
-    width: 4em;
-    height: 4em;
-    font-size: 1.875em;
+    width: 3em;
+    height: 3em;
+    font-size: 1.40625em;
   }
   .month-info-btn:hover, .month-info-btn.open{
     background: rgba(255,255,255,0.14);
@@ -171,6 +171,7 @@
     line-height: 1.55;
     color: var(--text-mid);
   }
+  .is-android .month-info-panel{ font-size: 1.125em; }
   .month-info-panel.open{ display: block; }
 
   .month-info-panel h4{
@@ -472,9 +473,9 @@
     transition: background 0.2s ease, filter 0.15s ease;
   }
   .is-android .vote-trigger-btn{
-    width: 4em;
-    height: 4em;
-    font-size: 1.875em;
+    width: 3em;
+    height: 3em;
+    font-size: 1.40625em;
   }
   .vote-trigger-btn:hover{
     background: rgba(255,255,255,0.16);
@@ -503,9 +504,9 @@
     transition: background 0.2s ease;
   }
   .is-android .vote-info-btn{
-    width: 4em;
-    height: 4em;
-    font-size: 1.875em;
+    width: 3em;
+    height: 3em;
+    font-size: 1.40625em;
   }
   .vote-info-btn:hover, .vote-info-btn.open{
     background: rgba(255,255,255,0.16);
@@ -528,6 +529,7 @@
     line-height: 1.55;
     color: var(--text-mid);
   }
+  .is-android .vote-info-panel{ font-size: 1.05em; }
   .vote-info-panel.open{ display: block; }
   .vote-info-panel h4{
     margin: 0 0 0.6em;
@@ -560,6 +562,7 @@
     align-items: center;
     gap: 2em;
   }
+  .is-android .vote-panel-row{ gap: 3em; }
   .modal-variant-right .vote-panel-row{ flex-direction: row-reverse; }
 
   .vote-panel-box{
@@ -612,9 +615,9 @@
     transition: background 0.2s ease;
   }
   .is-android .vote-confirm-btn{
-    width: 4em;
-    height: 4em;
-    font-size: 2.1em;
+    width: 3em;
+    height: 3em;
+    font-size: 1.575em;
   }
   .vote-confirm-btn:hover{ background: rgba(90,200,130,0.4); }
 
@@ -1456,10 +1459,15 @@ function clampPanelWidth(panelEl, btnEl, growsLeft){
   panelEl.style.maxWidth = Math.max(space, 220) + 'px';
 }
 
-function renderMonth(mese){
+function renderMonth(mese, isFirstMonth){
   const hasMatches = mese.matches && mese.matches.length > 0;
   const wrapper = document.createElement('div');
   wrapper.className = 'month' + (hasMatches ? '' : ' tbd');
+
+  // Su Android il pulsante regole (fuori dal popup) compare solo per il
+  // primo mese, non ripetuto in ognuno: su schermi piccoli, ora piu grande
+  // (x1.5), diventava ridondante vederlo ovunque. Su PC resta uno per mese.
+  const showInfoBtn = !isAndroidDevice || isFirstMonth;
 
   const header = document.createElement('div');
   header.className = 'month-header';
@@ -1467,25 +1475,27 @@ function renderMonth(mese){
     <span class="month-name">${mese.nome}</span>
     <span class="month-index">${mese.numero}</span>
     <span class="month-rule"></span>
-    <button type="button" class="month-info-btn" aria-label="Regole decretazione vincitore">i</button>
-    <div class="month-info-panel">${WINNER_RULES_HTML}</div>
+    ${showInfoBtn ? `<button type="button" class="month-info-btn" aria-label="Regole decretazione vincitore">i</button>
+    <div class="month-info-panel">${WINNER_RULES_HTML}</div>` : ''}
   `;
   wrapper.appendChild(header);
 
   const infoBtn = header.querySelector('.month-info-btn');
   const infoPanel = header.querySelector('.month-info-panel');
-  infoPanel.addEventListener('click', (e) => e.stopPropagation());
-  infoBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const willOpen = !infoPanel.classList.contains('open');
-    document.querySelectorAll('.month-info-panel.open').forEach(p => p.classList.remove('open'));
-    document.querySelectorAll('.month-info-btn.open').forEach(b => b.classList.remove('open'));
-    if(willOpen){
-      clampPanelWidth(infoPanel, infoBtn, true);
-      infoPanel.classList.add('open');
-      infoBtn.classList.add('open');
-    }
-  });
+  if(infoBtn && infoPanel){
+    infoPanel.addEventListener('click', (e) => e.stopPropagation());
+    infoBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const willOpen = !infoPanel.classList.contains('open');
+      document.querySelectorAll('.month-info-panel.open').forEach(p => p.classList.remove('open'));
+      document.querySelectorAll('.month-info-btn.open').forEach(b => b.classList.remove('open'));
+      if(willOpen){
+        clampPanelWidth(infoPanel, infoBtn, true);
+        infoPanel.classList.add('open');
+        infoBtn.classList.add('open');
+      }
+    });
+  }
 
   const matchesEl = document.createElement('div');
   matchesEl.className = 'matches';
@@ -2186,7 +2196,7 @@ const timeline = document.getElementById('timeline');
 (async function init(){
   const winners = await loadWinners();
   applyWinners(winners);
-  MESI.forEach(m => timeline.appendChild(renderMonth(m)));
+  MESI.forEach((m, idx) => timeline.appendChild(renderMonth(m, idx === 0)));
   setupSnapScrollNav(); // i mesi ora esistono davvero nel DOM: solo ora ha senso cercarli
   updateRateLimitUI();
 })();
