@@ -2,5 +2,9 @@
   "feb-1": {
     "winner": "R",
     "dashDark": true
+  },
+  "feb-2": {
+    "winner": "L",
+    "votes": {}
   }
 }
