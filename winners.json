@@ -3,5 +3,9 @@
     "winner": "R",
     "dashDark": true,
     "votes": {}
+  },
+  "ago-1": {
+    "winner": "L",
+    "votes": {}
   }
 }
