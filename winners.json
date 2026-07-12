@@ -11,5 +11,11 @@
   "mar-3": {
     "winner": "L",
     "votes": {}
+  },
+  "mag-2": {
+    "winner": null,
+    "votes": {
+      "L": "10"
+    }
   }
 }
